@@ -94,6 +94,7 @@ class NelderMeadSimplex {
     usize function_calls = simplex.size();
     usize iterations = 0;
 
+    // Performs optimisation via iteration
     while (iterations < m_max_iter) {
       iterations += 1;
       sort_simplex(simplex, objective_values);
