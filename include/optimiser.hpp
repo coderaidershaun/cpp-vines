@@ -7,7 +7,6 @@
 #include <array>
 #include <cmath>
 #include <functional>
-#include <tuple>
 #include <utility>
 
 #include <types.hpp>
@@ -160,7 +159,7 @@ class NelderMeadSimplex {
   }
 
   private:
-  inline std::tuple<Params<N>, Bounds<N>> params_bounds_split() const {
+  inline std::pair<Params<N>, Bounds<N>> params_bounds_split() const {
     Params<N> params{};
     Bounds<N> bounds{};
 

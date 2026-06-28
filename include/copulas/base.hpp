@@ -6,7 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
-#include <tuple>
+#include <utility>
 #include <vector>
 
 #include <optimiser.hpp>
@@ -21,6 +21,11 @@ struct CondProbsH {
     : u1_given_u2(u1_given_u2),
       u2_given_u1(u2_given_u1)
   {}
+};
+
+struct CopulaDensityEstimate {
+  std::vector<double> densities;
+  double ln_likelihood;
 };
 
 template <usize ParamsN>
@@ -58,7 +63,7 @@ class Copula {
           m_params[i][0] = candidate_params[i];
         }
 
-        return -std::get<1>(estimate_copula_prob_densities());
+        return -estimate_copula_prob_densities().ln_likelihood;
       };
 
     NelderMeadSimplex<ParamsN> optimiser(
@@ -82,7 +87,7 @@ class Copula {
     return results;
   }
   
-  std::tuple<std::vector<double>, double> estimate_copula_prob_densities() const {
+  CopulaDensityEstimate estimate_copula_prob_densities() const {
     double ln_likelihood = 0.0;
     std::vector<double> copula_prob_densities;
     const usize n = this->m_u1.size();
@@ -94,7 +99,7 @@ class Copula {
       copula_prob_densities.emplace_back(copula_density);
     }
 
-    return std::tuple{copula_prob_densities, ln_likelihood};
+    return {std::move(copula_prob_densities), ln_likelihood};
   }
 
   CondProbsH h_conditional_prob_set(double u1_scalar, double u2_scalar) const {

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <expected>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <concordance.hpp>
@@ -18,8 +19,7 @@
 #include <types.hpp>
 
 
-int main() {
-  const std::string filename = "prices.csv";
+std::pair<AssetStats, AssetStats> load_asset_stats(const std::string& filename) {
   auto ln_returns_asset_1_res = read_csv(filename, 0);
   auto ln_returns_asset_2_res = read_csv(filename, 1);
 
@@ -39,6 +39,13 @@ int main() {
     asset_1.push_ln_return(ln_returns_asset_1[i]);
     asset_2.push_ln_return(ln_returns_asset_2[i]);
   }
+
+  return {std::move(asset_1), std::move(asset_2)};
+}
+
+
+int main() {
+  auto [asset_1, asset_2] = load_asset_stats("prices.csv");
 
   const std::vector<double> u1 = asset_1.u_values();
   const std::vector<double> u2 = asset_2.u_values();
