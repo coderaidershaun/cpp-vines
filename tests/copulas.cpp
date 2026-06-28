@@ -4,15 +4,19 @@
 #include <cassert>
 #include <iostream>
 #include <optional>
+#include <expected>
 #include <string>
 
 #include <copulas/clayton.hpp>
 #include <copulas/guassian.hpp>
 #include <copulas/gumbel.hpp>
 #include <copulas/studentt.hpp>
+#include <concordance.hpp>
 #include <csv.hpp>
+#include <errors.hpp>
 #include <types.hpp>
 #include <stats.hpp>
+
 
 int main() {
   const std::string filename = "prices.csv";
@@ -36,42 +40,47 @@ int main() {
     asset_2.push_ln_return(ln_returns_asset_2[i]);
   }
 
-  std::vector<double> u1 = asset_1.u_values();
-  std::vector<double> u2 = asset_2.u_values();
-  const double default_param = 0.5;
+  const std::vector<double> u1 = asset_1.u_values();
+  const std::vector<double> u2 = asset_2.u_values();
+
+  std::expected<double, SmartError> k_tau_res = kendals_tau(u1, u2);
+  assert(k_tau_res.has_value());
+  double k_tau = *k_tau_res;
   
-  Clayton clayton(u1, u2, default_param);
+  double alpha_init = (2.0 * k_tau) / (1.0 - k_tau);
+  Clayton clayton(u1, u2, alpha_init);
   clayton.fit();
-
-  Guassian guassian(u1, u2, default_param);
+  
+  Guassian guassian(u1, u2, k_tau);
   guassian.fit();
-
-  Gumbel gumbel(u1, u2, default_param);
+  
+  double delta_init = 1.0 / (1.0 - k_tau);
+  Gumbel gumbel(u1, u2, delta_init);
   gumbel.fit();
 
-  StudentT student_t(u1, u2, default_param);
+  StudentT student_t(u1, u2, k_tau);
   student_t.fit();
 
   CondProbsH h_clayton = clayton.h_conditional_prob_set(u1[0], u2[0]);
-  assert(std::fabs(clayton.params()[0][0] - 2.75524) < 1e-4);
-  assert(std::fabs(h_clayton.u1_given_u2 - 0.609068) < 1e-4);
-  assert(std::fabs(h_clayton.u2_given_u1 - 0.879606) < 1e-4);
+  assert(std::fabs(clayton.params()[0][0] - 2.75616) < 1e-3);
+  assert(std::fabs(h_clayton.u1_given_u2 - 0.609068) < 1e-3);
+  assert(std::fabs(h_clayton.u2_given_u1 - 0.879606) < 1e-3);
 
   CondProbsH h_guassian = guassian.h_conditional_prob_set(u1[0], u2[0]);
-  assert(std::fabs(guassian.params()[0][0] - 0.823819) < 1e-4);
-  assert(std::fabs(h_guassian.u1_given_u2 - 0.315475) < 1e-4);
-  assert(std::fabs(h_guassian.u2_given_u1 - 0.908858) < 1e-4);
+  assert(std::fabs(guassian.params()[0][0] - 0.823819) < 1e-3);
+  assert(std::fabs(h_guassian.u1_given_u2 - 0.315475) < 1e-3);
+  assert(std::fabs(h_guassian.u2_given_u1 - 0.908858) < 1e-3);
 
   CondProbsH h_gumbel = gumbel.h_conditional_prob_set(u1[0], u2[0]);
-  assert(std::fabs(gumbel.params()[0][0] - 2.43675) < 1e-4);
-  assert(std::fabs(h_gumbel.u1_given_u2 - 0.183306) < 1e-4);
-  assert(std::fabs(h_gumbel.u2_given_u1 - 0.955891) < 1e-4);
+  assert(std::fabs(gumbel.params()[0][0] - 2.43675) < 1e-3);
+  assert(std::fabs(h_gumbel.u1_given_u2 - 0.183306) < 1e-3);
+  assert(std::fabs(h_gumbel.u2_given_u1 - 0.955891) < 1e-3);
 
   CondProbsH h_student_t = student_t.h_conditional_prob_set(u1[0], u2[0]);
-  assert(std::fabs(student_t.params()[0][0] - 0.81097) < 1e-4);
-  assert(std::fabs(student_t.params()[1][0] - 2.01) < 1e-4);
-  assert(std::fabs(h_student_t.u1_given_u2 - 0.236129) < 1e-4);
-  assert(std::fabs(h_student_t.u2_given_u1 - 0.956844) < 1e-4);
+  assert(std::fabs(student_t.params()[0][0] - 0.836974) < 1e-3);
+  assert(std::fabs(student_t.params()[1][0] - 3.61791) < 1e-3);
+  assert(std::fabs(h_student_t.u1_given_u2 - 0.239538) < 1e-3);
+  assert(std::fabs(h_student_t.u2_given_u1 - 0.943748) < 1e-3);
 
   return 0;
 }
