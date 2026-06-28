@@ -1,8 +1,12 @@
 #pragma once
 
 #include <array>
+#include <cmath>
+#include <iostream>
+#include <string>
 #include <tuple>
 #include <vector>
+#include <optimiser.hpp>
 #include <types.hpp>
 
 struct CondProbsH {
@@ -36,7 +40,43 @@ class Copula {
   
   virtual ~Copula() = default;
 
-  inline const ParamBounds<ParamsN>& params() const { return m_params; }
+  inline const ParamBounds<ParamsN>& params() const {
+    return m_params;
+  }
+
+  /// Runs optimisation algorithm to finds optimum parameter(s) for copula
+  OptimiserResults fit() {
+    const ParamBounds<ParamsN> initial_params = m_params;
+
+    const auto negative_log_likelihood =
+      [this](const std::array<double, ParamsN>& candidate_params) {
+        for (usize i=0; i<ParamsN; i++) {
+          m_params[i][0] = candidate_params[i];
+        }
+
+        return -std::get<1>(estimate_copula_prob_densities());
+      };
+
+    NelderMeadSimplex<ParamsN> optimiser(
+      negative_log_likelihood,
+      m_params
+    );
+
+    const OptimiserResults results = optimiser.fit();
+
+    if (results.result != Result::Success) {
+      m_params = initial_params;
+      std::cout << "Optimisation failed for: " << name() << std::endl;
+      return results;
+    }
+
+    const auto& optimal_params = optimiser.optimal_params();
+    for (usize i=0; i<ParamsN; i++) {
+      m_params[i][0] = optimal_params[i];
+    }
+
+    return results;
+  }
   
   std::tuple<std::vector<double>, double> estimate_copula_prob_densities() const {
     double ln_likelihood = 0.0;
@@ -62,4 +102,5 @@ class Copula {
 
   virtual double estimate_copula_density(double u1_scalar, double u2_scalar) const = 0;
   virtual double h_conditional_prob(double u1_scalar, double u2_scalar) const = 0;
+  virtual std::string name() const = 0;
 };

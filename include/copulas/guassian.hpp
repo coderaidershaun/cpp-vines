@@ -16,6 +16,10 @@ class Guassian : public Copula<1> {
     : Copula(u1, u2, {{rho_init, -0.999, 0.999}})
   {}
   
+  std::string name() const override {
+    return "Guassian";
+  }
+
   // c(u_1, u_2; \rho) = (1 - \rho^2)^{-1/2} \exp\left(-\frac{\rho^2 \xi_1^2 - 2\rho \xi_1 \xi_2 + \rho^2 \xi_2^2}{2(1 - \rho^2)}\right)
   inline double estimate_copula_density(double u1, double u2) const override {
     const double rho = this->params()[0][0];

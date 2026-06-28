@@ -42,6 +42,9 @@ target_link_libraries(csv PRIVATE cpp-vines::cpp-vines)
 add_executable(ecdf tests/ecdf.cpp)
 target_link_libraries(ecdf PRIVATE cpp-vines::cpp-vines)
 
+add_executable(optimiser tests/optimiser.cpp)
+target_link_libraries(optimiser PRIVATE cpp-vines::cpp-vines)
+
 add_executable(series tests/series.cpp)
 target_link_libraries(series PRIVATE cpp-vines::cpp-vines)
 

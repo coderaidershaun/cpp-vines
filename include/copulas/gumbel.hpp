@@ -15,6 +15,10 @@ class Gumbel : public Copula<1> {
     : Copula(u1, u2, {{delta_init, 1.0001, 50.0}})
   {}
 
+  std::string name() const override {
+    return "Gumbel";
+  }
+
   // c(u_1, u_2; \delta) = (A + \delta - 1) A^{1 - 2\delta} \exp(-A) (u_1 u_2)^{-1} (-\ln u_1)^{\delta - 1} (-\ln u_2)^{\delta - 1}
   inline double estimate_copula_density(double u1_scalar, double u2_scalar) const 
   override {

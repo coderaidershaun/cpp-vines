@@ -14,6 +14,10 @@ class Clayton : public Copula<1> {
   ) 
     : Copula(u1, u2, {{alpha_init, -0.99, 50.0}})
   {}
+
+  std::string name() const override {
+    return "Clayton";
+  }
   
   // c(u_1, u_2; \alpha) = (\alpha + 1) \left(u_1^{-\alpha} + u_2^{-\alpha} - 1\right)^{-2 - \frac{1}{\alpha}} u_1^{-\alpha - 1} u_2^{-\alpha - 1}
   inline double estimate_copula_density(double u1_scalar, double u2_scalar) const 

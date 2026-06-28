@@ -38,34 +38,38 @@ int main() {
 
   std::vector<double> u1 = asset_1.u_values();
   std::vector<double> u2 = asset_2.u_values();
-
-  const double clayton_param_init = 2.75683214734828;
-  const double gumbel_param_init = 2.43657044645699;
-  const double guassian_param_init = 0.823818841558402;
-  const double student_param_rho_init = 0.836763621513228;
-  const double student_param_nu_init = 3.62129898479099;
+  const double default_param = 0.5;
   
-  Clayton clayton(u1, u2, clayton_param_init);
+  Clayton clayton(u1, u2, default_param);
+  clayton.fit();
   CondProbsH h_clayton = clayton.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "Clayton H Function Conditional Probabilities:" << std::endl;
+  std::cout << "Clayton Copula:" << std::endl;
+  std::cout << "alpha: " << clayton.params()[0][0] << std::endl;
   std::cout << "u1_given_u2: " << h_clayton.u1_given_u2 << std::endl;
   std::cout << "u2_given_u1: " << h_clayton.u2_given_u1 << std::endl;
 
-  Guassian guassian(u1, u2, guassian_param_init);
+  Guassian guassian(u1, u2, default_param);
+  guassian.fit();
   CondProbsH h_guassian = guassian.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "\nGuassian H Function Conditional Probabilities:" << std::endl;
+  std::cout << "\nGuassian Copula:" << std::endl;
+  std::cout << "rho: " << guassian.params()[0][0] << std::endl;
   std::cout << "u1_given_u2: " << h_guassian.u1_given_u2 << std::endl;
   std::cout << "u2_given_u1: " << h_guassian.u2_given_u1 << std::endl;
   
-  Gumbel gumbel(u1, u2, gumbel_param_init);
+  Gumbel gumbel(u1, u2, default_param);
+  gumbel.fit();
   CondProbsH h_gumbel = gumbel.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "\nGumbel H Function Conditional Probabilities:" << std::endl;
+  std::cout << "\nGumbel Copula:" << std::endl;
+  std::cout << "delta: " << gumbel.params()[0][0] << std::endl;
   std::cout << "u1_given_u2: " << h_gumbel.u1_given_u2 << std::endl;
   std::cout << "u2_given_u1: " << h_gumbel.u2_given_u1 << std::endl;
 
-  StudentT student_t(u1, u2, student_param_rho_init, student_param_nu_init);
+  StudentT student_t(u1, u2, default_param, default_param);
+  student_t.fit();
   CondProbsH h_student_t = student_t.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "\nStudentT H Function Conditional Probabilities:" << std::endl;
+  std::cout << "\nStudentT Copula:" << std::endl;
+  std::cout << "rho: " << student_t.params()[0][0] << std::endl;
+  std::cout << "nu: " << student_t.params()[1][0] << std::endl;
   std::cout << "u1_given_u2: " << h_student_t.u1_given_u2 << std::endl;
   std::cout << "u2_given_u1: " << h_student_t.u2_given_u1 << std::endl;
 

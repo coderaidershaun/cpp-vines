@@ -17,6 +17,10 @@ class StudentT : public Copula<2> {
     : Copula(u1, u2, {{{rho_init, -0.999, 0.999}, {nu_init, 2.01, 50.0}}})
   {}
   
+  std::string name() const override {
+    return "StudentT";
+  }
+
   // c(u_1, u_2) = K(1 - \rho^2)^{-1/2} \left[1 + \nu^{-1}(1 - \rho^2)^{-1}\left(\xi_1^2 - 2\rho \xi_1 \xi_2 + \xi_2^2\right)\right]^{-(\nu + 2)/2} \left[\left(1 + \nu^{-1}\xi_1^2\right)\left(1 + \nu^{-1}\xi_2^2\right)\right]^{(\nu + 1)/2}
   inline double estimate_copula_density(double u1, double u2) const override {
     const double rho = this->params()[0][0];
