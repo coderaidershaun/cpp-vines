@@ -2,6 +2,7 @@
 
 #include <string_view>
 
+
 enum class SmartError {
   ArrayLengthZero,
   ArraysLengthMismatch,

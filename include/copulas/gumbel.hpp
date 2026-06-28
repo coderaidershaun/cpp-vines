@@ -1,8 +1,11 @@
 #pragma once
 
 #include <cmath>
-#include <tuple>
+#include <string>
+#include <vector>
+
 #include <copulas/base.hpp>
+
 
 class Gumbel : public Copula<1> {
 

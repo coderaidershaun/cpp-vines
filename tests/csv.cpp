@@ -1,10 +1,12 @@
 //! cmake --build build --target csv
 //! ./build/csv
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 #include <csv.hpp>
+#include <errors.hpp>
+
 
 int main() {
 

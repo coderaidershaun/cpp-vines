@@ -1,12 +1,16 @@
+//! Allows for importing of provided prices.csv for testing
+
 #pragma once
 
+#include <exception>
+#include <expected>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <expected>
 
 #include <errors.hpp>
+
 
 std::expected<std::vector<double>, SmartError> read_csv(
   const std::string& filename,

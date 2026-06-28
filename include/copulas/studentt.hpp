@@ -1,9 +1,13 @@
 #pragma once
 
 #include <cmath>
-#include <tuple>
+#include <string>
+#include <vector>
+
 #include <boost/math/distributions/students_t.hpp>
+
 #include <copulas/base.hpp>
+
 
 class StudentT : public Copula<2> {
 

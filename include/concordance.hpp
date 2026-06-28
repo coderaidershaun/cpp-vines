@@ -2,7 +2,6 @@
 
 #include <expected>
 #include <vector>
-#include <span>
 
 #include <errors.hpp>
 

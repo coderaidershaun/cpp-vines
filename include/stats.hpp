@@ -1,11 +1,16 @@
 #pragma once
 
+#include <cmath>
 #include <expected>
-#include <string>
+#include <optional>
+#include <span>
+#include <vector>
 
 #include <ecdf.hpp>
 #include <errors.hpp>
 #include <series.hpp>
+#include <types.hpp>
+
 
 class AssetStats {
 

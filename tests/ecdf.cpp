@@ -2,9 +2,10 @@
 //! ./build/ecdf
 
 #include <cassert>
-#include <iostream>
 #include <optional>
+
 #include <ecdf.hpp>
+
 
 int main() {
 

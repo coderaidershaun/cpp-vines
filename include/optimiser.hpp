@@ -1,10 +1,15 @@
+//! Nelder Mead optimiser adapted from existing Cryptoi Wizards Rust codebase.
+//! Allows for MLE discovery of optimum Copula parameters. 
+
 #pragma once
 
 #include <algorithm>
 #include <array>
-#include <functional>
 #include <cmath>
+#include <functional>
 #include <tuple>
+#include <utility>
+
 #include <types.hpp>
 
 

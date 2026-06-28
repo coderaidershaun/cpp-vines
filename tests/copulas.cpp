@@ -2,20 +2,20 @@
 //! ./build/copulas
 
 #include <cassert>
-#include <iostream>
-#include <optional>
+#include <cmath>
 #include <expected>
 #include <string>
+#include <vector>
 
+#include <concordance.hpp>
 #include <copulas/clayton.hpp>
 #include <copulas/guassian.hpp>
 #include <copulas/gumbel.hpp>
 #include <copulas/studentt.hpp>
-#include <concordance.hpp>
 #include <csv.hpp>
 #include <errors.hpp>
-#include <types.hpp>
 #include <stats.hpp>
+#include <types.hpp>
 
 
 int main() {

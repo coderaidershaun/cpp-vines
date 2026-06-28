@@ -1,7 +1,14 @@
+//! Empirical cumulative distribution function construction and lookup
+
 #pragma once
 
-#include <iostream>
-#include "series.hpp"
+#include <algorithm>
+#include <cassert>
+#include <iterator>
+#include <vector>
+
+#include <types.hpp>
+
 
 class Ecdf {
   std::vector<double> values_sorted{};

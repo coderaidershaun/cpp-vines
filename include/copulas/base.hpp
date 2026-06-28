@@ -1,3 +1,5 @@
+//! Base class for structuring other copulas within folder.
+
 #pragma once
 
 #include <array>
@@ -6,8 +8,10 @@
 #include <string>
 #include <tuple>
 #include <vector>
+
 #include <optimiser.hpp>
 #include <types.hpp>
+
 
 struct CondProbsH {
   const double u1_given_u2;

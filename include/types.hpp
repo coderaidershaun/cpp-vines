@@ -1,7 +1,10 @@
+//! Provides shared types across library and binary files.
+
 #pragma once
 
 #include <array>
 #include <cstddef>
+
 
 using usize = std::size_t;
 

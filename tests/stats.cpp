@@ -1,10 +1,14 @@
 //! cmake --build build --target stats
 //! ./build/stats
 
+#include <array>
 #include <cassert>
+#include <cstddef>
 #include <iostream>
-#include <optional>
+#include <vector>
+
 #include <stats.hpp>
+
 
 int main() {
 

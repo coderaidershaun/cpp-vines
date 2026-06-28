@@ -1,9 +1,13 @@
 #pragma once
 
 #include <cmath>
-#include <tuple>
+#include <string>
+#include <vector>
+
 #include <boost/math/distributions/normal.hpp>
+
 #include <copulas/base.hpp>
+
 
 class Guassian : public Copula<1> {
 

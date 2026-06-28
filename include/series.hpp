@@ -1,16 +1,18 @@
+//! Allows for low latency updating and reading of timeseries prices, returns etc.
+//! Provides the mean without having to iterate over the data twice. This is useful
+//! as many econometric algorithms rely upon the mean. This cuts out one extra step.
+
 #pragma once
 
-#include <algorithm>    // std::move algorithm
-#include <vector>       // std::vector
-#include <cassert>      // assert
-#include <span>         // std::span, non-owning view
-#include <utility>      // std::move cast
-#include <concepts>     // std::integral, std::floating_point, std::same_as, std::copyable
-#include <type_traits>  // type traits utilities
-#include <optional>     // std::optional, std::nullopt
-#include <stdexcept>    // std::invalid_argument
+#include <algorithm>
+#include <concepts>
+#include <optional>
+#include <span>
+#include <stdexcept>
+#include <utility>
+#include <vector>
 
-#include <types.hpp>    // usize
+#include <types.hpp>
 
 
 template <typename T>
