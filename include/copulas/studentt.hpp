@@ -12,7 +12,7 @@ class StudentT : public Copula<2> {
     const std::vector<double>& u1,
     const std::vector<double>& u2,
     double rho_init = 0.5,
-    double nu_init = 2.0 // degrees of freedom
+    double nu_init = 2.50 // degrees of freedom
   ) 
     : Copula(u1, u2, {{{rho_init, -0.999, 0.999}, {nu_init, 2.01, 50.0}}})
   {}

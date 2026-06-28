@@ -42,36 +42,36 @@ int main() {
   
   Clayton clayton(u1, u2, default_param);
   clayton.fit();
-  CondProbsH h_clayton = clayton.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "Clayton Copula:" << std::endl;
-  std::cout << "alpha: " << clayton.params()[0][0] << std::endl;
-  std::cout << "u1_given_u2: " << h_clayton.u1_given_u2 << std::endl;
-  std::cout << "u2_given_u1: " << h_clayton.u2_given_u1 << std::endl;
 
   Guassian guassian(u1, u2, default_param);
   guassian.fit();
-  CondProbsH h_guassian = guassian.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "\nGuassian Copula:" << std::endl;
-  std::cout << "rho: " << guassian.params()[0][0] << std::endl;
-  std::cout << "u1_given_u2: " << h_guassian.u1_given_u2 << std::endl;
-  std::cout << "u2_given_u1: " << h_guassian.u2_given_u1 << std::endl;
-  
+
   Gumbel gumbel(u1, u2, default_param);
   gumbel.fit();
-  CondProbsH h_gumbel = gumbel.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "\nGumbel Copula:" << std::endl;
-  std::cout << "delta: " << gumbel.params()[0][0] << std::endl;
-  std::cout << "u1_given_u2: " << h_gumbel.u1_given_u2 << std::endl;
-  std::cout << "u2_given_u1: " << h_gumbel.u2_given_u1 << std::endl;
 
-  StudentT student_t(u1, u2, default_param, default_param);
+  StudentT student_t(u1, u2, default_param);
   student_t.fit();
+
+  CondProbsH h_clayton = clayton.h_conditional_prob_set(u1[0], u2[0]);
+  assert(std::fabs(clayton.params()[0][0] - 2.75524) < 1e-4);
+  assert(std::fabs(h_clayton.u1_given_u2 - 0.609068) < 1e-4);
+  assert(std::fabs(h_clayton.u2_given_u1 - 0.879606) < 1e-4);
+
+  CondProbsH h_guassian = guassian.h_conditional_prob_set(u1[0], u2[0]);
+  assert(std::fabs(guassian.params()[0][0] - 0.823819) < 1e-4);
+  assert(std::fabs(h_guassian.u1_given_u2 - 0.315475) < 1e-4);
+  assert(std::fabs(h_guassian.u2_given_u1 - 0.908858) < 1e-4);
+
+  CondProbsH h_gumbel = gumbel.h_conditional_prob_set(u1[0], u2[0]);
+  assert(std::fabs(gumbel.params()[0][0] - 2.43675) < 1e-4);
+  assert(std::fabs(h_gumbel.u1_given_u2 - 0.183306) < 1e-4);
+  assert(std::fabs(h_gumbel.u2_given_u1 - 0.955891) < 1e-4);
+
   CondProbsH h_student_t = student_t.h_conditional_prob_set(u1[0], u2[0]);
-  std::cout << "\nStudentT Copula:" << std::endl;
-  std::cout << "rho: " << student_t.params()[0][0] << std::endl;
-  std::cout << "nu: " << student_t.params()[1][0] << std::endl;
-  std::cout << "u1_given_u2: " << h_student_t.u1_given_u2 << std::endl;
-  std::cout << "u2_given_u1: " << h_student_t.u2_given_u1 << std::endl;
+  assert(std::fabs(student_t.params()[0][0] - 0.81097) < 1e-4);
+  assert(std::fabs(student_t.params()[1][0] - 2.01) < 1e-4);
+  assert(std::fabs(h_student_t.u1_given_u2 - 0.236129) < 1e-4);
+  assert(std::fabs(h_student_t.u2_given_u1 - 0.956844) < 1e-4);
 
   return 0;
 }
