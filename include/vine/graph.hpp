@@ -20,7 +20,7 @@ using Data = std::vector<std::span<const double>>;
 
 using Edge = std::array<int, 2>;
 
-using GraphEdges = std::vector<Edge>;
+using Graph = std::vector<Edge>;
 
 struct KTauResult {
   int a;
@@ -38,8 +38,8 @@ class Prims {
   /// Build a connected graph without any closed loops and
   /// following Kruskalls and Prims methods. The output will be a set
   /// of edges (somewhat in order of concordance).
-  std::expected<GraphEdges, SmartError> build_graph() {
-    GraphEdges graph{};
+  std::expected<Graph, SmartError> build_graph() {
+    Graph graph{};
     int target_edges = m_data.size() - 1;
 
     auto tau_results = generate_tau_rankings();
@@ -76,10 +76,20 @@ class Prims {
       }
     }
 
+    sort_graph(graph);
+
     return graph;
   }
 
   private:
+  void sort_graph(Graph& graph) {
+    std::sort(graph.begin(), graph.end(), [](Edge& x, Edge& y) {
+      if (x < y) {
+        return true;
+      }
+      return y > x;
+    });
+  }
 
   /// Generates individual pair correlations ranked in order of highest 
   /// correlated to lowest. Useful for Kruskalls or Prims algorith to 
