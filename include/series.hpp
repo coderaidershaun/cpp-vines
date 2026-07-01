@@ -40,7 +40,7 @@ class FixedSeries : public SeriesMean<T> {
   usize m_start_i = 0;
 
   public:
-  FixedSeries(usize series_capacity, usize track_multiple)
+  FixedSeries(usize series_capacity, usize track_multiple=5)
     : m_data_track_capacity(series_capacity * track_multiple),
       m_series_capacity(series_capacity)
   {
@@ -52,7 +52,7 @@ class FixedSeries : public SeriesMean<T> {
       throw std::invalid_argument("track_multiple must be greater than 1");
     }
 
-    m_data_track.reserve(m_data_track_capacity);
+    m_data_track.resize(m_data_track_capacity);
   }
 
   void push(T item) {

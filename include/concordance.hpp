@@ -7,8 +7,8 @@
 
 
 const std::expected<double, SmartError> kendals_tau(
-  const std::vector<double>& x,
-  const std::vector<double>& y
+  std::span<const double> x,
+  std::span<const double> y
 ) {
   if (x.size() == 0) {
     return std::unexpected(SmartError::ArrayLengthZero);

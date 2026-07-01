@@ -24,7 +24,7 @@ std::pair<AssetStats, AssetStats> load_asset_stats(const std::string& filename) 
   auto ln_returns_asset_2_res = read_csv(filename, 1);
 
   if (!ln_returns_asset_1_res ||  !ln_returns_asset_2_res) {
-    throw ("Failed to load from filename: " + filename);
+    throw std::runtime_error("Failed to load from filename: " + filename);
   }
   
   std::vector<double> ln_returns_asset_1 = *ln_returns_asset_1_res; 
