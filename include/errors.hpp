@@ -9,6 +9,9 @@ enum class SmartError {
   CsvFailedToOpen,
   CsvIncorrectColumnIndex,
   CsvOther,
+  CopulaNotFitted,
+  CopulaFitsFailed,
+  MissingWeighting,
   DivisionByZero,
   PriceZero,
   PriceNegative,
@@ -28,8 +31,14 @@ constexpr std::string_view error_to_string(SmartError error) {
       return "CsvIncorrectColumnIndex: Column index must be greater than zero";
     case SmartError::CsvOther:
       return "CsvOther: An error occured parsing the csv data";
+    case SmartError::CopulaNotFitted:
+      return "CopulaNotFitted: Copula fitting has not been run";
+    case SmartError::CopulaFitsFailed:
+      return "CopulaFitsFailed: All copula fits failed";
     case SmartError::DivisionByZero:
       return "DivisionByZero: There was a division by zero attempted";
+    case SmartError::MissingWeighting:
+      return "MissingWeighting: Edge weightings must be set before calling this function";
     case SmartError::PriceZero:
       return "PriceZero: prices cannot be zero";
     case SmartError::PriceNegative:
@@ -42,4 +51,3 @@ constexpr std::string_view error_to_string(SmartError error) {
 
   return "Error: Unknown SmartError occured";
 }
-

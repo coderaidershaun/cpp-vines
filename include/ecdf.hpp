@@ -20,7 +20,7 @@ class Ecdf {
     : capacity(capacity)
   {
     assert(capacity > 1);
-    values_sorted.reserve(capacity);
+    values_sorted.reserve(capacity + 1);
     cdf.reserve(capacity);
   }
 

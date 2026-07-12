@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cmath>
+#include <limits>
+#include <span>
 #include <string>
-#include <vector>
 
 #include <copulas/base.hpp>
 
@@ -11,8 +12,8 @@ class Gumbel : public Copula<1> {
 
   public:
   Gumbel(
-    const std::vector<double>& u1,
-    const std::vector<double>& u2,
+    std::span<const double> u1,
+    std::span<const double> u2,
     double delta_init = 0.5
   ) 
     : Copula(u1, u2, {{delta_init, 1.0001, 50.0}})
@@ -43,6 +44,23 @@ class Gumbel : public Copula<1> {
       std::powf(-std::log(u1_scalar), delta - 1.0) * 
       term_B(u1_scalar, u2_scalar) *
       std::exp(-term_A(u1_scalar, u2_scalar));
+  }
+
+  // \tau = 1 - \frac{1}{\delta}
+  double kendalls_tau() const {
+    const double delta = this->params()[0][0];
+    if (delta == 0.0) {
+      return -std::numeric_limits<double>::infinity();
+    }
+    return 1.0 - (1.0 / delta);
+  }
+
+  // \delta = \frac{1}{1 - \tau}
+  static double delta_from_kendalls_tau(double tau) {
+    if (tau >= 1.0) {
+      return std::numeric_limits<double>::infinity();
+    }
+    return 1.0 / (1.0 - tau);
   }
 
   private:

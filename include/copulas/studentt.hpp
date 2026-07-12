@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cmath>
+#include <numbers>
+#include <span>
 #include <string>
-#include <vector>
 
 #include <boost/math/distributions/students_t.hpp>
 
@@ -13,8 +14,8 @@ class StudentT : public Copula<2> {
 
   public:
   StudentT(
-    const std::vector<double>& u1,
-    const std::vector<double>& u2,
+    std::span<const double> u1,
+    std::span<const double> u2,
     double rho_init = 0.5,
     double nu_init = 2.50 // degrees of freedom
   ) 
@@ -53,6 +54,12 @@ class StudentT : public Copula<2> {
 
     boost::math::students_t_distribution<double> dist{nu + 1.0};
     return boost::math::cdf(dist, arg);
+  }
+
+  // \tau = \frac{2}{\pi}\arcsin(\rho)
+  double kendalls_tau() const {
+    const double rho = this->params()[0][0];
+    return (2.0 / std::numbers::pi) * std::asin(rho);
   }
 
   private:

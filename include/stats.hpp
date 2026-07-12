@@ -41,7 +41,7 @@ class AssetStats {
     return {};
   }
 
-  void push_ln_return(double ln_return) {
+  void push_ln_return(double ln_return, bool update_marginals=true) {
     m_ln_returns.push(ln_return);
     m_ecdf.push(ln_return);
   }

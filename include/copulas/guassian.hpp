@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cmath>
+#include <numbers>
+#include <span>
 #include <string>
-#include <vector>
 
 #include <boost/math/distributions/normal.hpp>
 
@@ -13,8 +14,8 @@ class Guassian : public Copula<1> {
 
   public:
   Guassian(
-    const std::vector<double>& u1,
-    const std::vector<double>& u2,
+    std::span<const double> u1,
+    std::span<const double> u2,
     double rho_init = 0.5
   ) 
     : Copula(u1, u2, {{rho_init, -0.999, 0.999}})
@@ -43,6 +44,12 @@ class Guassian : public Copula<1> {
     const double x2 = inverse_cdf(u2_scalar);
 
     return cdf((x2 - rho * x1) / std::sqrt(1.0 - rho * rho));
+  }
+
+  // \tau = \frac{2}{\pi}\arcsin(\rho)
+  double kendalls_tau() const {
+    const double rho = this->params()[0][0];
+    return (2.0 / std::numbers::pi) * std::asin(rho);
   }
 
   private:

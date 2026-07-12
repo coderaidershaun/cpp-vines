@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cmath>
 #include <expected>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,6 +18,7 @@
 #include <errors.hpp>
 #include <stats.hpp>
 #include <types.hpp>
+#include <vine/edge.hpp>
 
 
 std::pair<AssetStats, AssetStats> load_asset_stats(const std::string& filename) {
@@ -49,24 +51,53 @@ int main() {
 
   const std::vector<double> u1 = asset_1.u_values();
   const std::vector<double> u2 = asset_2.u_values();
+  const std::span<const double> u1_view = u1;
+  const std::span<const double> u2_view = u2;
 
   std::expected<double, SmartError> k_tau_res = kendals_tau(u1, u2);
   assert(k_tau_res.has_value());
   double k_tau = *k_tau_res;
   
-  double alpha_init = (2.0 * k_tau) / (1.0 - k_tau);
-  Clayton clayton(u1, u2, alpha_init);
+  double alpha_init = Clayton::alpha_from_kendalls_tau(k_tau);
+  Clayton clayton(u1_view, u2_view, alpha_init);
   clayton.fit();
   
-  Guassian guassian(u1, u2, k_tau);
+  Guassian guassian(u1_view, u2_view, k_tau);
   guassian.fit();
   
-  double delta_init = 1.0 / (1.0 - k_tau);
-  Gumbel gumbel(u1, u2, delta_init);
+  double delta_init = Gumbel::delta_from_kendalls_tau(k_tau);
+  Gumbel gumbel(u1_view, u2_view, delta_init);
   gumbel.fit();
 
-  StudentT student_t(u1, u2, k_tau);
+  StudentT student_t(u1_view, u2_view, k_tau);
   student_t.fit();
+
+  Edge edge(bitmask(0), bitmask(1), bitmask_empty());
+  assert(!edge.m_copula.has_value());
+  assert(edge.m_copula.error() == SmartError::CopulaNotFitted);
+  const auto edge_fit = edge.fit(u1_view, u2_view, k_tau);
+  assert(edge_fit.has_value());
+  assert(edge.m_copula.has_value());
+  const double fitted_k_tau = std::visit(
+    [](const auto& fitted_copula) {
+      return fitted_copula.kendalls_tau();
+    },
+    *edge.m_copula
+  );
+  assert(std::fabs(edge.m_k_tau - fitted_k_tau) < 1e-12);
+
+  const std::span<const double> empty;
+  const auto failed_fit = Edge::fit_optimal_copula(empty, empty, 0.0);
+  assert(!failed_fit.has_value());
+  assert(failed_fit.error() == SmartError::ArrayLengthZero);
+
+  Edge failed_edge(bitmask(0), bitmask(1), bitmask_empty());
+  const auto failed_edge_fit = failed_edge.fit(empty, empty, 0.0);
+  assert(!failed_edge_fit.has_value());
+  assert(failed_edge_fit.error() == SmartError::ArrayLengthZero);
+  assert(!failed_edge.m_copula.has_value());
+  assert(failed_edge.m_copula.error() == SmartError::ArrayLengthZero);
+  assert(failed_edge.m_k_tau == 0.0);
 
   CondProbsH h_clayton = clayton.h_conditional_prob_set(u1[0], u2[0]);
   assert(std::fabs(clayton.params()[0][0] - 2.75616) < 1e-3);

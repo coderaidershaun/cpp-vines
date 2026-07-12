@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,14 +33,14 @@ template <usize ParamsN>
 class Copula {
 
   protected:
-  const std::vector<double>& m_u1;
-  const std::vector<double>& m_u2;
+  std::span<const double> m_u1;
+  std::span<const double> m_u2;
   ParamBounds<ParamsN> m_params;
 
   public:
   Copula(
-    const std::vector<double>& u1,
-    const std::vector<double>& u2,
+    std::span<const double> u1,
+    std::span<const double> u2,
     ParamBounds<ParamsN> m_params
   )
     : m_u1(u1),
@@ -112,4 +113,5 @@ class Copula {
   virtual double estimate_copula_density(double u1_scalar, double u2_scalar) const = 0;
   virtual double h_conditional_prob(double u1_scalar, double u2_scalar) const = 0;
   virtual std::string name() const = 0;
+  virtual double kendalls_tau() const = 0;
 };

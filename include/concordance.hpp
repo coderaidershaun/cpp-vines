@@ -1,6 +1,7 @@
 #pragma once
 
 #include <expected>
+#include <span>
 #include <vector>
 
 #include <errors.hpp>

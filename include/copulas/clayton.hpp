@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cmath>
+#include <limits>
+#include <span>
 #include <string>
-#include <vector>
 
 #include <copulas/base.hpp>
 
@@ -11,8 +12,8 @@ class Clayton : public Copula<1> {
 
   public:
   Clayton(
-    const std::vector<double>& u1,
-    const std::vector<double>& u2,
+    std::span<const double> u1,
+    std::span<const double> u2,
     double alpha_init = 0.5
   ) 
     : Copula(u1, u2, {{alpha_init, -0.99, 50.0}})
@@ -44,5 +45,19 @@ class Clayton : public Copula<1> {
         (std::powf(u1_scalar, -alpha) + std::powf(u2_scalar, -alpha) - 1.0),
         (-(1.0 + alpha) / alpha)
       );
+  }
+
+  // \frac{/alpa}{/alpha + 2.0}
+  double kendalls_tau() const {
+    const double alpha = this->params()[0][0];
+    return alpha / (alpha + 2.0);
+  }
+
+  // \alpha = \frac{2.0 tau}{1.0 - tau}
+  static double alpha_from_kendalls_tau(double tau) {
+    if (tau >= 1.0) {
+      return std::numeric_limits<double>::infinity();
+    }
+    return (2.0 * tau) / (1.0 - tau);
   }
 };
