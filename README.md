@@ -21,6 +21,26 @@ floating-point marginals.
 
 ✅ Python interface (built using LLMs)
 
+## How Can Vine Copulas be Profitable
+
+[The idea](https://www.econstor.eu/bitstream/10419/147450/1/870932616.pdf)
+
+We are used to performing statistical arbitrage in pairs trading. However, what if we wish to compare the relative mispricing of one asset compared to multiple others?
+
+Vine copulas give us this super power, albeit the calculations are extremely sensitive and rather complex at first glance.
+
+The general idea is that if the probability of an asset is underpriced (or overpriced) relative to the market, it might show up in the following way:
+
+P(U5 <= u5 | U1=u1, U2=u2, U3=u3, U4=4, U6=u6) < 0.05 then go long on U5 (e.g. Solana) and short on the market (e.g. BTC representing the other random variables).
+
+$$
+\operatorname{CMPI}_t = \sum_{i=1}^{t} \left(\operatorname{MI}_i - 0.5\right)
+$$
+
+The above url shows that a trader could go long or short based on this CMPI using bollinger bands - a common tool in statistical arbitrage.
+
+![alt text](image-1.png)
+
 ## Lessons Learned
 
 ⚠️ Copulas are sensitive. Ideally, the mean of the standalone MI (mispricing index) would be 0.5. However, when running with only the handful of copulas included in this library, we notice there is drift occuring which adds up when calculating CMPI.
