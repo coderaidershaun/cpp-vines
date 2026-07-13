@@ -51,7 +51,7 @@ be evaluated as entry signals. See
 for the research behind this approach. This project computes model outputs; it
 does not execute trades or provide a complete backtesting system.
 
-![CMPI with a 20-period mean and Bollinger Band](image-1.png)
+![CMPI with a 20-period mean and Bollinger Band](image-2.png)
 
 ## Lessons learned
 
