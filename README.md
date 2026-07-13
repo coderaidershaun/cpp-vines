@@ -49,7 +49,7 @@ If this series is mean-reverting, crossings of its rolling Bollinger Bands can
 be evaluated as entry signals. See
 [Statistical arbitrage with vine copulas](https://www.econstor.eu/bitstream/10419/147450/1/870932616.pdf)
 for the research behind this approach. This project computes model outputs; it
-does not execute trades or provide a complete backtesting system.
+does not execute trades or provide a complete backtesting system. In fact, you can see how well the Vine-Copula strategy performed versus the overall market by reviewing the chart extract below:
 
 ![CMPI with a 20-period mean and Bollinger Band](image-2.png)
 
