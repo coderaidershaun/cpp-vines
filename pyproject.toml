@@ -1,0 +1,18 @@
+[build-system]
+requires = [
+    "scikit-build-core>=1.0.3",
+    "pybind11>=3.0",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "cpp-vines"
+version = "0.1.0"
+description = "Python bindings for the cpp-vines C++ library"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.scikit-build]
+build-dir = "build/{wheel_tag}"
+cmake.build-type = "Release"
+wheel.packages = ["python/vines"]

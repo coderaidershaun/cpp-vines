@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.23)
 
 project(cpp-vines LANGUAGES CXX)
 
+option(CPP_VINES_BUILD_PYTHON "Build the Python extension module" OFF)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Boost REQUIRED)
@@ -33,26 +35,42 @@ target_sources(cpp-vines
         FILES ${CPP_VINES_HEADERS}
 )
 
-add_executable(copulas tests/copulas.cpp)
-target_link_libraries(copulas PRIVATE cpp-vines::cpp-vines)
+if(SKBUILD OR CPP_VINES_BUILD_PYTHON)
+    set(PYBIND11_FINDPYTHON ON)
+    find_package(pybind11 CONFIG REQUIRED)
 
-add_executable(csv tests/csv.cpp)
-target_link_libraries(csv PRIVATE cpp-vines::cpp-vines)
+    pybind11_add_module(_vines MODULE include/pybridge.cpp)
+    target_link_libraries(_vines PRIVATE cpp-vines::cpp-vines)
 
-add_executable(ecdf tests/ecdf.cpp)
-target_link_libraries(ecdf PRIVATE cpp-vines::cpp-vines)
+    install(
+        TARGETS _vines
+        LIBRARY DESTINATION vines
+        RUNTIME DESTINATION vines
+    )
+endif()
 
-add_executable(vine tests/vine.cpp)
-target_link_libraries(vine PRIVATE cpp-vines::cpp-vines)
+if(NOT SKBUILD)
+    add_executable(copulas tests/copulas.cpp)
+    target_link_libraries(copulas PRIVATE cpp-vines::cpp-vines)
 
-add_executable(example-vine examples/vine-example.cpp)
-target_link_libraries(example-vine PRIVATE cpp-vines::cpp-vines)
+    add_executable(csv tests/csv.cpp)
+    target_link_libraries(csv PRIVATE cpp-vines::cpp-vines)
 
-add_executable(optimiser tests/optimiser.cpp)
-target_link_libraries(optimiser PRIVATE cpp-vines::cpp-vines)
+    add_executable(ecdf tests/ecdf.cpp)
+    target_link_libraries(ecdf PRIVATE cpp-vines::cpp-vines)
 
-add_executable(series tests/series.cpp)
-target_link_libraries(series PRIVATE cpp-vines::cpp-vines)
+    add_executable(vine tests/vine.cpp)
+    target_link_libraries(vine PRIVATE cpp-vines::cpp-vines)
 
-add_executable(stats tests/stats.cpp)
-target_link_libraries(stats PRIVATE cpp-vines::cpp-vines)
+    add_executable(example-vine examples/vine-example.cpp)
+    target_link_libraries(example-vine PRIVATE cpp-vines::cpp-vines)
+
+    add_executable(optimiser tests/optimiser.cpp)
+    target_link_libraries(optimiser PRIVATE cpp-vines::cpp-vines)
+
+    add_executable(series tests/series.cpp)
+    target_link_libraries(series PRIVATE cpp-vines::cpp-vines)
+
+    add_executable(stats tests/stats.cpp)
+    target_link_libraries(stats PRIVATE cpp-vines::cpp-vines)
+endif()
