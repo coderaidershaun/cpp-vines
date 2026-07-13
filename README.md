@@ -12,9 +12,13 @@ dependence structures in asset returns, but the core accepts any aligned
 floating-point marginals.
 
 ✅ Low latency dynamic copula and vine-copula fitting functionality
+
 ✅ Empirical CDF based approach in tracking log returns
+
 ✅ Nelder Mead optimization algorithm hand-crafted in C++
+
 ✅ 5sec runtime vs 8sec for comparison library
+
 ✅ Python interface (built using LLMs)
 
 ## Lessons Learned
