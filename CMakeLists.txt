@@ -39,7 +39,7 @@ if(SKBUILD OR CPP_VINES_BUILD_PYTHON)
     set(PYBIND11_FINDPYTHON ON)
     find_package(pybind11 CONFIG REQUIRED)
 
-    pybind11_add_module(_vines MODULE include/pybridge.cpp)
+    pybind11_add_module(_vines MODULE include/py-bridge.cpp)
     target_link_libraries(_vines PRIVATE cpp-vines::cpp-vines)
 
     install(

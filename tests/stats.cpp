@@ -12,7 +12,7 @@
 
 int main() {
 
-  AssetStats test_asset(5);
+  Asset test_asset(5);
 
   const std::size_t n = 5;
   std::array<double, n> prices{1.1, 2.2, 3.3, 4.4, 5.5};

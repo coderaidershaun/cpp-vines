@@ -1,5 +1,7 @@
 #pragma once
 
+//! Stores an asset's prices, log returns, and empirical marginal values.
+
 #include <cmath>
 #include <expected>
 #include <optional>
@@ -12,14 +14,14 @@
 #include <types.hpp>
 
 
-class AssetStats {
+class Asset {
 
   FixedSeries<double> m_prices;
   FixedSeries<double> m_ln_returns;
   Ecdf m_ecdf;
 
   public:
-  AssetStats(
+  Asset(
     usize series_size,
     usize price_track_multiple=5,
     usize ecdf_size=10'000

@@ -70,6 +70,29 @@ class FixedSeries:
     def __len__(self) -> int: ...
 
 
+class Asset:
+    def __init__(
+        self,
+        series_size: int,
+        price_track_multiple: int = 5,
+        ecdf_size: int = 10_000,
+    ) -> None: ...
+
+    def push_price(self, price: float) -> None: ...
+
+    def push_ln_return(
+        self,
+        ln_return: float,
+        update_marginals: bool = True,
+    ) -> None: ...
+
+    def ln_returns(self) -> list[float]: ...
+
+    def prices(self) -> list[float]: ...
+
+    def u_values(self) -> list[float]: ...
+
+
 class _Copula:
     @property
     def params(self) -> list[list[float]]: ...

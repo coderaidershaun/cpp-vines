@@ -19,9 +19,9 @@
 #include <vine/edge.hpp>
 #include <vine/vine.hpp>
 
-std::vector<AssetStats> load_asset_stats(const std::string& filename) {
+std::vector<Asset> load_assets(const std::string& filename) {
   const std::vector<int> csv_asset_col_indexes{3, 4, 5, 6, 7, 8};
-  std::vector<AssetStats> assets;
+  std::vector<Asset> assets;
   assets.reserve(csv_asset_col_indexes.size());
 
   usize series_size = 0;
@@ -100,12 +100,12 @@ void verify_vine(const Vine& vine) {
 }
 
 int main() {
-  auto assets = load_asset_stats("prices.csv");
+  auto assets = load_assets("prices.csv");
 
   std::vector<std::vector<double>> marginal_values{};
   marginal_values.reserve(assets.size());
 
-  for (const AssetStats& asset : assets) {
+  for (const Asset& asset : assets) {
     marginal_values.emplace_back(asset.u_values());
   }
 

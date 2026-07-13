@@ -11,6 +11,9 @@ version = "0.1.0"
 description = "Python bindings for the cpp-vines C++ library"
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies = [
+    "matplotlib",
+]
 
 [tool.scikit-build]
 build-dir = "build/{wheel_tag}"

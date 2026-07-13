@@ -1,3 +1,4 @@
+from ._vines import Asset as Asset
 from ._vines import Clayton as Clayton
 from ._vines import CondProbsH as CondProbsH
 from ._vines import CopulaDensityEstimate as CopulaDensityEstimate
@@ -17,6 +18,7 @@ from ._vines import VinesError as VinesError
 from ._vines import __version__ as __version__
 
 __all__ = [
+    "Asset",
     "Clayton",
     "CondProbsH",
     "CopulaDensityEstimate",

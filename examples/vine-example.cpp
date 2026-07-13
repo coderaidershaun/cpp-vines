@@ -16,9 +16,9 @@
 #include <vine/edge.hpp>
 #include <vine/vine.hpp>
 
-std::vector<AssetStats> load_assets(const std::string& filename) {
+std::vector<Asset> load_assets(const std::string& filename) {
   constexpr std::array columns{3, 4, 5, 6, 7, 8};
-  std::vector<AssetStats> assets;
+  std::vector<Asset> assets;
   assets.reserve(columns.size());
 
   usize price_count = 0;

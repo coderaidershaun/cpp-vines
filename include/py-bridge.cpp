@@ -14,6 +14,7 @@
 #include <pybind11/native_enum.h>
 #include <pybind11/stl.h>
 
+#include <asset.hpp>
 #include <copulas/clayton.hpp>
 #include <copulas/guassian.hpp>
 #include <copulas/gumbel.hpp>
@@ -266,6 +267,42 @@ PYBIND11_MODULE(_vines, module) {
     .def_property_readonly("sum", &FixedSeries<double>::sum)
     .def_property_readonly("last", &FixedSeries<double>::last)
     .def("__len__", &FixedSeries<double>::size);
+
+  py::class_<Asset>(module, "Asset")
+    .def(
+      py::init<usize, usize, usize>(),
+      py::arg("series_size"),
+      py::arg("price_track_multiple") = 5,
+      py::arg("ecdf_size") = 10'000
+    )
+    .def(
+      "push_price",
+      [](Asset& asset, double price) {
+        expected_value_or_throw(asset.push_price(price));
+      },
+      py::arg("price")
+    )
+    .def(
+      "push_ln_return",
+      &Asset::push_ln_return,
+      py::arg("ln_return"),
+      py::arg("update_marginals") = true
+    )
+    .def(
+      "ln_returns",
+      [](const Asset& asset) {
+        const auto values = asset.ln_returns();
+        return std::vector<double>(values.begin(), values.end());
+      }
+    )
+    .def(
+      "prices",
+      [](const Asset& asset) {
+        const auto values = asset.prices();
+        return std::vector<double>(values.begin(), values.end());
+      }
+    )
+    .def("u_values", &Asset::u_values);
 
   auto clayton = py::class_<ClaytonBridge>(module, "Clayton")
     .def(

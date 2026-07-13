@@ -1,6 +1,7 @@
 """Python interface for cpp-vines."""
 
 from ._vines import (
+    Asset,
     Clayton,
     CondProbsH,
     CopulaDensityEstimate,
@@ -21,6 +22,7 @@ from ._vines import (
 )
 
 __all__ = [
+    "Asset",
     "Clayton",
     "CondProbsH",
     "CopulaDensityEstimate",

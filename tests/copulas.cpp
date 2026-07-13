@@ -22,7 +22,7 @@
 #include <vine/edge.hpp>
 
 
-std::pair<AssetStats, AssetStats> load_asset_stats(const std::string& filename) {
+std::pair<Asset, Asset> load_assets(const std::string& filename) {
   auto ln_returns_asset_1_res = read_csv(filename, 0);
   auto ln_returns_asset_2_res = read_csv(filename, 1);
 
@@ -38,8 +38,8 @@ std::pair<AssetStats, AssetStats> load_asset_stats(const std::string& filename) 
   std::vector<double> ln_returns_asset_2 = *ln_returns_asset_2_res; 
   const usize n = ln_returns_asset_1.size();
 
-  AssetStats asset_1(n);
-  AssetStats asset_2(n);
+  Asset asset_1(n);
+  Asset asset_2(n);
 
   for (usize i=0; i<n; i++) {
     asset_1.push_ln_return(ln_returns_asset_1[i]);
@@ -51,7 +51,7 @@ std::pair<AssetStats, AssetStats> load_asset_stats(const std::string& filename) 
 
 
 int main() {
-  auto [asset_1, asset_2] = load_asset_stats("prices.csv");
+  auto [asset_1, asset_2] = load_assets("prices.csv");
 
   const std::vector<double> u1 = asset_1.u_values();
   const std::vector<double> u2 = asset_2.u_values();
