@@ -1,10 +1,10 @@
 # cpp-vines
 
-![alt text](image.png)
-
-You can see from running `./build/example-vine ` above the results for fitting an R-Vine copula to
+You can see from running `./build/example-vine ` below the results for fitting an R-Vine copula to
 6 assets ecdf based log returns. This information can be used for computing CMPI (Cumulative Mispricing Index)
 and determining a potential statistical arbitrage opportunity.
+
+![alt text](image.png)
 
 `cpp-vines` is a C++23 proof of concept for fitting regular-vine (R-vine)
 copula models to aligned numerical series. It is aimed at experimenting with
