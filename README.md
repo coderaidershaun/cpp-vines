@@ -11,6 +11,20 @@ copula models to aligned numerical series. It is aimed at experimenting with
 dependence structures in asset returns, but the core accepts any aligned
 floating-point marginals.
 
+✅ Low latency dynamic copula and vine-copula fitting functionality
+✅ Empirical CDF based approach in tracking log returns
+✅ Nelder Mead optimization algorithm hand-crafted in C++
+✅ 5sec runtime vs 8sec for comparison library
+✅ Python interface (built using LLMs)
+
+## Lessons Learned
+
+⚠️ Copulas are sensitive. Ideally, the mean of the standalone MI (mispricing index) would be 0.5. However, when running with only the handful of copulas included in this library, we notice there is drift occuring which adds up when calculating CMPI.
+
+This can throw the end-result off quite a bit and thus is not yet suitable for production.
+
+That said, this library has been tested against the `pyvinecopulib` for sanity checking vine tree structures, tau and parameters. When doing so it is clear that the results are rather close. Meaning the only real drawback currently is the lack of additional copulas for more precise fitting - albeit `cpp-vines` appears to run 30% to 40% faster.
+
 ## Highlights
 
 - **Fixed-capacity numerical series.** `FixedSeries` maintains a rolling
