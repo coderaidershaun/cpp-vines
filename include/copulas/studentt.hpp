@@ -1,12 +1,13 @@
 #pragma once
 
+//! Implements the bivariate Student-t copula with symmetric tail dependence.
+
 #include <cmath>
 #include <numbers>
 #include <span>
 #include <string>
 
 #include <boost/math/distributions/students_t.hpp>
-
 #include <copulas/base.hpp>
 
 
@@ -26,7 +27,7 @@ class StudentT : public Copula<2> {
     return "StudentT";
   }
 
-  // c(u_1, u_2) = K(1 - \rho^2)^{-1/2} \left[1 + \nu^{-1}(1 - \rho^2)^{-1}\left(\xi_1^2 - 2\rho \xi_1 \xi_2 + \xi_2^2\right)\right]^{-(\nu + 2)/2} \left[\left(1 + \nu^{-1}\xi_1^2\right)\left(1 + \nu^{-1}\xi_2^2\right)\right]^{(\nu + 1)/2}
+  /// c(u_1, u_2) = K(1 - \rho^2)^{-1/2} \left[1 + \nu^{-1}(1 - \rho^2)^{-1}\left(\xi_1^2 - 2\rho \xi_1 \xi_2 + \xi_2^2\right)\right]^{-(\nu + 2)/2} \left[\left(1 + \nu^{-1}\xi_1^2\right)\left(1 + \nu^{-1}\xi_2^2\right)\right]^{(\nu + 1)/2}
   inline double estimate_copula_density(double u1, double u2) const override {
     const double rho = this->params()[0][0];
     const double nu = this->params()[1][0];
@@ -40,7 +41,7 @@ class StudentT : public Copula<2> {
       * std::pow((1.0 + x1 * x1 / nu) * (1.0 + x2 * x2 / nu), (nu + 1.0) / 2.0);
   }
 
-  // C_{2|1}(u_2, u_1) = t_{\nu+1}\left(\sqrt{\frac{\nu + 1}{\nu + \left(t_{\nu}^{-1}(u_1)\right)^2}} \left[\frac{t_{\nu}^{-1}(u_2) - \rho t_{\nu}^{-1}(u_1)}{\sqrt{1 - \rho^2}}\right]\right)
+  /// C_{2|1}(u_2, u_1) = t_{\nu+1}\left(\sqrt{\frac{\nu + 1}{\nu + \left(t_{\nu}^{-1}(u_1)\right)^2}} \left[\frac{t_{\nu}^{-1}(u_2) - \rho t_{\nu}^{-1}(u_1)}{\sqrt{1 - \rho^2}}\right]\right)
   double h_conditional_prob(double u1, double u2) const override {
     const double rho = this->params()[0][0];
     const double nu = this->params()[1][0];
@@ -56,8 +57,8 @@ class StudentT : public Copula<2> {
     return boost::math::cdf(dist, arg);
   }
 
-  // \tau = \frac{2}{\pi}\arcsin(\rho)
-  double kendalls_tau() const {
+  /// \tau = \frac{2}{\pi}\arcsin(\rho)
+  double kendalls_tau() const override {
     const double rho = this->params()[0][0];
     return (2.0 / std::numbers::pi) * std::asin(rho);
   }
@@ -74,7 +75,7 @@ class StudentT : public Copula<2> {
     return boost::math::cdf(dist, value);
   }
   
-  // K = \exp\left(\log\Gamma\left(\frac{\nu}{2}\right) - 2\log\Gamma\left(\frac{\nu + 1}{2}\right) + \log\Gamma\left(\frac{\nu + 2}{2}\right)\right)
+  /// K = \exp\left(\log\Gamma\left(\frac{\nu}{2}\right) - 2\log\Gamma\left(\frac{\nu + 1}{2}\right) + \log\Gamma\left(\frac{\nu + 2}{2}\right)\right)
   inline double term_K() const {
     const double nu = this->params()[1][0];
     constexpr double n = 2.0;

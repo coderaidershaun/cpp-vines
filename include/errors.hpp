@@ -1,22 +1,26 @@
 #pragma once
 
+//! Simple predefining of possible errors.
+
 #include <string_view>
 
 
 enum class SmartError {
   ArrayLengthZero,
   ArraysLengthMismatch,
+  CopulaFitsFailed,
+  CopulaNotFitted,
   CsvFailedToOpen,
   CsvIncorrectColumnIndex,
   CsvOther,
-  CopulaNotFitted,
-  CopulaFitsFailed,
-  MissingWeighting,
+  DisconnectedGraph,
   DivisionByZero,
-  PriceZero,
-  PriceNegative,
+  MissingConditionalValues,
+  MissingWeighting,
   PriceInfinite,
-  PriceNan
+  PriceNan,
+  PriceNegative,
+  PriceZero
 };
 
 constexpr std::string_view error_to_string(SmartError error) {
@@ -25,28 +29,32 @@ constexpr std::string_view error_to_string(SmartError error) {
       return "ArrayLengthZero: An array without any length was passed";
     case SmartError::ArraysLengthMismatch:
       return "ArraysLengthMismatch: Both arrays should have the same length";
+    case SmartError::CopulaFitsFailed:
+      return "CopulaFitsFailed: All copula fits failed";
+    case SmartError::CopulaNotFitted:
+      return "CopulaNotFitted: Copula fitting has not been run";
     case SmartError::CsvFailedToOpen:
       return "CsvFailure: Failed to open csv";
     case SmartError::CsvIncorrectColumnIndex:
       return "CsvIncorrectColumnIndex: Column index must be greater than zero";
     case SmartError::CsvOther:
       return "CsvOther: An error occured parsing the csv data";
-    case SmartError::CopulaNotFitted:
-      return "CopulaNotFitted: Copula fitting has not been run";
-    case SmartError::CopulaFitsFailed:
-      return "CopulaFitsFailed: All copula fits failed";
+    case SmartError::DisconnectedGraph:
+      return "DisconnectedGraph: Unable to construct a connected vine tree";
     case SmartError::DivisionByZero:
       return "DivisionByZero: There was a division by zero attempted";
+    case SmartError::MissingConditionalValues:
+      return "MissingConditionalValues: Conditional values are unavailable for the requested edge";
     case SmartError::MissingWeighting:
       return "MissingWeighting: Edge weightings must be set before calling this function";
-    case SmartError::PriceZero:
-      return "PriceZero: prices cannot be zero";
-    case SmartError::PriceNegative:
-      return "PriceZero: prices must be greater than zero";
     case SmartError::PriceInfinite:
       return "PriceZero: prices cannot be infinite";
     case SmartError::PriceNan:
       return "PriceZero: prices cannot be NaN";
+    case SmartError::PriceNegative:
+      return "PriceZero: prices must be greater than zero";
+    case SmartError::PriceZero:
+      return "PriceZero: prices cannot be zero";
   }
 
   return "Error: Unknown SmartError occured";

@@ -2,7 +2,6 @@
 //! ./build/ecdf
 
 #include <cassert>
-#include <optional>
 
 #include <ecdf.hpp>
 
@@ -17,9 +16,7 @@ int main() {
   ecdf.push(0.4); // 3.5 / (5 + 1) = 0.58333
   ecdf.push(0.5); // 4.5 / (5 + 1) = 0.75000
 
-  std::optional<double> lookup = ecdf.lookup_value(0.5);
   assert(ecdf.lookup_value(0.2) == 0.25);
-  assert(ecdf.lookup_value(0.5) == 0.75);
   assert(ecdf.lookup_value(0.5) == 0.75);
 
   return 0;

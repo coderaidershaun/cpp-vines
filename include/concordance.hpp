@@ -1,13 +1,14 @@
 #pragma once
 
+//! For storing concordant calculations such as kendalls tau.
+
 #include <expected>
 #include <span>
-#include <vector>
 
 #include <errors.hpp>
 
 
-const std::expected<double, SmartError> kendals_tau(
+std::expected<double, SmartError> kendalls_tau(
   std::span<const double> x,
   std::span<const double> y
 ) {

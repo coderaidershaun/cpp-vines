@@ -1,6 +1,6 @@
-//! Base class for structuring other copulas within folder.
-
 #pragma once
+
+//! Base class for structuring other copulas within folder.
 
 #include <array>
 #include <cmath>
@@ -41,11 +41,11 @@ class Copula {
   Copula(
     std::span<const double> u1,
     std::span<const double> u2,
-    ParamBounds<ParamsN> m_params
+    const ParamBounds<ParamsN>& params
   )
     : m_u1(u1),
       m_u2(u2),
-      m_params(m_params)
+      m_params(params)
   {}
   
   virtual ~Copula() = default;
@@ -72,7 +72,7 @@ class Copula {
       m_params
     );
 
-    const OptimiserResults results = optimiser.fit();
+    OptimiserResults results = optimiser.fit();
 
     if (results.result != Result::Success) {
       m_params = initial_params;
@@ -95,7 +95,7 @@ class Copula {
     copula_prob_densities.reserve(n);
 
     for (usize i=0; i<n; i++) {
-      double copula_density = estimate_copula_density(this->m_u1[i], this->m_u2[i]);
+      const double copula_density = estimate_copula_density(this->m_u1[i], this->m_u2[i]);
       ln_likelihood += std::log(copula_density);
       copula_prob_densities.emplace_back(copula_density);
     }

@@ -1,8 +1,6 @@
-//! Allows for low latency updating and reading of timeseries prices, returns etc.
-//! Provides the mean without having to iterate over the data twice. This is useful
-//! as many econometric algorithms rely upon the mean. This cuts out one extra step.
-
 #pragma once
+
+//! Maintains fixed-capacity series with constant-time rolling sums.
 
 #include <algorithm>
 #include <concepts>

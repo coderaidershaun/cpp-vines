@@ -1,7 +1,6 @@
-//! Nelder Mead optimiser adapted from existing Cryptoi Wizards Rust codebase.
-//! Allows for MLE discovery of optimum Copula parameters. 
-
 #pragma once
+
+//! Fits copula parameters by maximum likelihood using Nelder-Mead.
 
 #include <algorithm>
 #include <array>
@@ -58,7 +57,7 @@ class NelderMeadSimplex {
   public:
   NelderMeadSimplex(
     ObjectiveFunction<N> objective_f,
-    ParamBounds<N> params,
+    const ParamBounds<N>& params,
     bool adaptive = true,
     usize max_iter = 10'000
   ) 
@@ -98,7 +97,6 @@ class NelderMeadSimplex {
     usize function_calls = simplex.size();
     usize iterations = 0;
 
-    // Performs optimisation via iteration
     while (iterations < m_max_iter) {
       iterations += 1;
       sort_simplex(simplex, objective_values);

@@ -1,5 +1,7 @@
 #pragma once
 
+//! Implements the bivariate Clayton copula for lower-tail dependence.
+
 #include <cmath>
 #include <limits>
 #include <span>
@@ -23,7 +25,7 @@ class Clayton : public Copula<1> {
     return "Clayton";
   }
   
-  // c(u_1, u_2; \alpha) = (\alpha + 1) \left(u_1^{-\alpha} + u_2^{-\alpha} - 1\right)^{-2 - \frac{1}{\alpha}} u_1^{-\alpha - 1} u_2^{-\alpha - 1}
+  /// c(u_1, u_2; \alpha) = (\alpha + 1) \left(u_1^{-\alpha} + u_2^{-\alpha} - 1\right)^{-2 - \frac{1}{\alpha}} u_1^{-\alpha - 1} u_2^{-\alpha - 1}
   inline double estimate_copula_density(double u1_scalar, double u2_scalar) const 
   override {
     const double alpha = this->params()[0][0];
@@ -36,7 +38,7 @@ class Clayton : public Copula<1> {
       std::powf(u1_scalar, -alpha - 1.0) * std::powf(u2_scalar, -alpha - 1.0);
   }
 
-  // C_{2|1}(u_2 \mid u_1; \alpha) = u_1^{-(1+\alpha)} \left(u_1^{-\alpha} + u_2^{-\alpha} - 1\right)^{-\frac{1+\alpha}{\alpha}}
+  /// C_{2|1}(u_2 \mid u_1; \alpha) = u_1^{-(1+\alpha)} \left(u_1^{-\alpha} + u_2^{-\alpha} - 1\right)^{-\frac{1+\alpha}{\alpha}}
   double h_conditional_prob(double u1_scalar, double u2_scalar) const override {
     const double alpha = this->params()[0][0];
     return 
@@ -47,13 +49,13 @@ class Clayton : public Copula<1> {
       );
   }
 
-  // \frac{/alpa}{/alpha + 2.0}
-  double kendalls_tau() const {
+  /// \frac{/alpa}{/alpha + 2.0}
+  double kendalls_tau() const override {
     const double alpha = this->params()[0][0];
     return alpha / (alpha + 2.0);
   }
 
-  // \alpha = \frac{2.0 tau}{1.0 - tau}
+  /// \alpha = \frac{2.0 tau}{1.0 - tau}
   static double alpha_from_kendalls_tau(double tau) {
     if (tau >= 1.0) {
       return std::numeric_limits<double>::infinity();

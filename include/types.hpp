@@ -1,10 +1,10 @@
+#pragma once
+
 //! Provides shared types across library and binary files.
 
-#pragma once;
-
 #include <array>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 
 using usize = std::size_t;

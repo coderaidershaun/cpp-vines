@@ -1,6 +1,6 @@
-//! Allows for importing of provided prices.csv for testing
-
 #pragma once
+
+//! Allows for importing of provided prices.csv for testing.
 
 #include <exception>
 #include <expected>
@@ -28,7 +28,6 @@ std::expected<std::vector<double>, SmartError> read_csv(
   std::vector<double> values;
   std::string line;
 
-  // Skip header
   std::getline(file, line);
 
   while (std::getline(file, line)) {
@@ -57,7 +56,7 @@ std::expected<std::vector<double>, SmartError> read_csv(
         }
       }
 
-      ++current_column;
+      current_column += 1;
     }
 
     if (!found_column) {

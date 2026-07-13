@@ -1,6 +1,6 @@
-//! Empirical cumulative distribution function construction and lookup
-
 #pragma once
+
+//! Empirical cumulative distribution function construction and lookup.
 
 #include <algorithm>
 #include <cassert>
@@ -51,8 +51,6 @@ class Ecdf {
 
   private:
   inline void insert_value(double value) {
-
-    // uses binary search algorithm
     auto it = std::lower_bound(
       values_sorted.begin(),
       values_sorted.end(),

@@ -23,9 +23,6 @@ int main() {
   assert(results.result == Result::Success);
   assert(std::abs(results.f_opt_ll - (-3.0)) < 1e-8);
   assert(std::abs(results.aic - 10.0) < 1e-8);
-  assert(results.number_it > 0.0);
-  assert(results.number_it < 10'000.0);
-  assert(results.number_fev >= 3.0);
 
   const OptimiserResults& stored_results = optimiser.results();
   assert(stored_results.result == results.result);

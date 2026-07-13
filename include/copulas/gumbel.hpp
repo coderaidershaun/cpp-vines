@@ -1,5 +1,7 @@
 #pragma once
 
+//! Implements the bivariate Gumbel copula for upper-tail dependence.
+
 #include <cmath>
 #include <limits>
 #include <span>
@@ -23,7 +25,7 @@ class Gumbel : public Copula<1> {
     return "Gumbel";
   }
 
-  // c(u_1, u_2; \delta) = (A + \delta - 1) A^{1 - 2\delta} \exp(-A) (u_1 u_2)^{-1} (-\ln u_1)^{\delta - 1} (-\ln u_2)^{\delta - 1}
+  /// c(u_1, u_2; \delta) = (A + \delta - 1) A^{1 - 2\delta} \exp(-A) (u_1 u_2)^{-1} (-\ln u_1)^{\delta - 1} (-\ln u_2)^{\delta - 1}
   inline double estimate_copula_density(double u1_scalar, double u2_scalar) const 
   override {
     const double delta = this->m_params[0][0];
@@ -36,7 +38,7 @@ class Gumbel : public Copula<1> {
     );
   }
 
-  // C_{2|1}(u_2 \mid u_1; \delta) = u_1^{-1} (-\ln u_1)^{\delta - 1} B \exp(-A)
+  /// C_{2|1}(u_2 \mid u_1; \delta) = u_1^{-1} (-\ln u_1)^{\delta - 1} B \exp(-A)
   double h_conditional_prob(double u1_scalar, double u2_scalar) const override {
     const double delta = this->m_params[0][0];
     return 
@@ -46,8 +48,8 @@ class Gumbel : public Copula<1> {
       std::exp(-term_A(u1_scalar, u2_scalar));
   }
 
-  // \tau = 1 - \frac{1}{\delta}
-  double kendalls_tau() const {
+  /// \tau = 1 - \frac{1}{\delta}
+  double kendalls_tau() const override {
     const double delta = this->params()[0][0];
     if (delta == 0.0) {
       return -std::numeric_limits<double>::infinity();
@@ -55,7 +57,7 @@ class Gumbel : public Copula<1> {
     return 1.0 - (1.0 / delta);
   }
 
-  // \delta = \frac{1}{1 - \tau}
+  /// \delta = \frac{1}{1 - \tau}
   static double delta_from_kendalls_tau(double tau) {
     if (tau >= 1.0) {
       return std::numeric_limits<double>::infinity();
@@ -65,7 +67,7 @@ class Gumbel : public Copula<1> {
 
   private:
 
-  // A = \left((- \ln u_1)^{\delta} + (- \ln u_2)^{\delta}\right)^{1/\delta}
+  /// A = \left((- \ln u_1)^{\delta} + (- \ln u_2)^{\delta}\right)^{1/\delta}
   inline double term_A(double u1_scalar, double u2_scalar) const {
     const double delta = this->m_params[0][0];
     return
@@ -78,7 +80,7 @@ class Gumbel : public Copula<1> {
     );
   }
 
-  // B = \left((- \ln u_1)^{\delta} + (- \ln u_2)^{\delta}\right)^{\frac{1-\delta}{\delta}}
+  /// B = \left((- \ln u_1)^{\delta} + (- \ln u_2)^{\delta}\right)^{\frac{1-\delta}{\delta}}
   inline double term_B(double u1_scalar, double u2_scalar) const {
     const double delta = this->m_params[0][0];
     return

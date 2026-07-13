@@ -5,10 +5,12 @@
 #include <cmath>
 #include <expected>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <asset.hpp>
 #include <concordance.hpp>
 #include <copulas/clayton.hpp>
 #include <copulas/guassian.hpp>
@@ -16,7 +18,6 @@
 #include <copulas/studentt.hpp>
 #include <csv.hpp>
 #include <errors.hpp>
-#include <stats.hpp>
 #include <types.hpp>
 #include <vine/edge.hpp>
 
@@ -28,10 +29,13 @@ std::pair<AssetStats, AssetStats> load_asset_stats(const std::string& filename) 
   if (!ln_returns_asset_1_res ||  !ln_returns_asset_2_res) {
     throw std::runtime_error("Failed to load from filename: " + filename);
   }
+
+  if (ln_returns_asset_1_res->size() != ln_returns_asset_2_res->size()) {
+    throw std::runtime_error("Loaded series have different lengths");
+  }
   
   std::vector<double> ln_returns_asset_1 = *ln_returns_asset_1_res; 
   std::vector<double> ln_returns_asset_2 = *ln_returns_asset_2_res; 
-  assert(ln_returns_asset_1.size() == ln_returns_asset_2.size());
   const usize n = ln_returns_asset_1.size();
 
   AssetStats asset_1(n);
@@ -54,7 +58,7 @@ int main() {
   const std::span<const double> u1_view = u1;
   const std::span<const double> u2_view = u2;
 
-  std::expected<double, SmartError> k_tau_res = kendals_tau(u1, u2);
+  std::expected<double, SmartError> k_tau_res = kendalls_tau(u1, u2);
   assert(k_tau_res.has_value());
   double k_tau = *k_tau_res;
   
@@ -73,18 +77,34 @@ int main() {
   student_t.fit();
 
   Edge edge(bitmask(0), bitmask(1), bitmask_empty());
-  assert(!edge.m_copula.has_value());
-  assert(edge.m_copula.error() == SmartError::CopulaNotFitted);
+  assert(!edge.copula_available());
+  assert(!edge.left_given_right().has_value());
+  assert(!edge.right_given_left().has_value());
+  const auto missing_conditionals = edge.conditional_values(bitmask(0), bitmask(1));
+  assert(!missing_conditionals.has_value());
+  assert(missing_conditionals.error() == SmartError::MissingConditionalValues);
+
   const auto edge_fit = edge.fit(u1_view, u2_view, k_tau);
   assert(edge_fit.has_value());
-  assert(edge.m_copula.has_value());
-  const double fitted_k_tau = std::visit(
-    [](const auto& fitted_copula) {
-      return fitted_copula.kendalls_tau();
-    },
-    *edge.m_copula
-  );
-  assert(std::fabs(edge.m_k_tau - fitted_k_tau) < 1e-12);
+  assert(edge.copula_available());
+  assert(edge.k_tau().has_value());
+  assert(std::fabs(*edge.k_tau() - k_tau) < 1e-12);
+
+  const auto left_given_right = edge.conditional_values(bitmask(0), bitmask(1));
+  assert(left_given_right.has_value());
+  assert(left_given_right->size() == u1.size());
+  assert(edge.left_given_right().has_value());
+  assert(edge.left_given_right()->data() == left_given_right->data());
+
+  const auto right_given_left = edge.conditional_values(bitmask(1), bitmask(0));
+  assert(right_given_left.has_value());
+  assert(right_given_left->size() == u2.size());
+  assert(edge.right_given_left().has_value());
+  assert(edge.right_given_left()->data() == right_given_left->data());
+
+  const auto unavailable_conditionals = edge.conditional_values(bitmask(0), bitmask_empty());
+  assert(!unavailable_conditionals.has_value());
+  assert(unavailable_conditionals.error() == SmartError::MissingConditionalValues);
 
   const std::span<const double> empty;
   const auto failed_fit = Edge::fit_optimal_copula(empty, empty, 0.0);
@@ -95,9 +115,8 @@ int main() {
   const auto failed_edge_fit = failed_edge.fit(empty, empty, 0.0);
   assert(!failed_edge_fit.has_value());
   assert(failed_edge_fit.error() == SmartError::ArrayLengthZero);
-  assert(!failed_edge.m_copula.has_value());
-  assert(failed_edge.m_copula.error() == SmartError::ArrayLengthZero);
-  assert(failed_edge.m_k_tau == 0.0);
+  assert(!failed_edge.copula_available());
+  assert(!failed_edge.k_tau().has_value());
 
   CondProbsH h_clayton = clayton.h_conditional_prob_set(u1[0], u2[0]);
   assert(std::fabs(clayton.params()[0][0] - 2.75616) < 1e-3);

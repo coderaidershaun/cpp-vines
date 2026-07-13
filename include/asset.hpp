@@ -30,9 +30,9 @@ class AssetStats {
   {}
 
   std::expected<void, SmartError> push_price(double price) {
-    std::optional<double> last_price_opt = m_prices.last();
+    const std::optional<double> last_price_opt = m_prices.last();
 
-    std::expected<void, SmartError> price_push_res = add_price(price);
+    const std::expected<void, SmartError> price_push_res = add_price(price);
     if (!price_push_res) return std::unexpected(price_push_res.error());
 
     if (!last_price_opt) return {};
@@ -50,9 +50,13 @@ class AssetStats {
     return std::span(m_ln_returns.data().begin(), m_ln_returns.data().end());
   }
 
+  std::span<const double> prices() const {
+    return std::span(m_prices.data().begin(), m_prices.data().end());
+  }
+
   std::vector<double> u_values() const {
-    std::span<const double> ln_returns_values = m_ln_returns.data();
-    usize n = ln_returns_values.size();
+    const std::span<const double> ln_returns_values = m_ln_returns.data();
+    const usize n = ln_returns_values.size();
 
     std::vector<double> u_values{};
     u_values.reserve(n);
@@ -65,7 +69,7 @@ class AssetStats {
   }
 
   private:
-  inline std::expected<void, SmartError> check_price(double price) {
+  static std::expected<void, SmartError> check_price(double price) {
     if (price == 0.0) {
       return std::unexpected(SmartError::PriceZero);
     } else if (price < 0.0) {
@@ -80,7 +84,7 @@ class AssetStats {
   }
 
   inline std::expected<void, SmartError> add_price(double price) {
-    std::expected<void, SmartError> price_ok = check_price(price);
+    const std::expected<void, SmartError> price_ok = check_price(price);
     if (!price_ok) { return std::unexpected(price_ok.error()); }
     m_prices.push(price);
     return {};
