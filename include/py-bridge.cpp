@@ -18,6 +18,7 @@
 #include <copulas/clayton.hpp>
 #include <copulas/guassian.hpp>
 #include <copulas/gumbel.hpp>
+#include <copulas/independence.hpp>
 #include <copulas/studentt.hpp>
 #include <errors.hpp>
 #include <series.hpp>
@@ -92,6 +93,10 @@ class CopulaBridge {
     return {cpp_params.begin(), cpp_params.end()};
   }
 
+  usize parameter_count() const {
+    return m_copula.parameter_count();
+  }
+
   CopulaDensityEstimate estimate_copula_prob_densities() const {
     return m_copula.estimate_copula_prob_densities();
   }
@@ -120,6 +125,7 @@ class CopulaBridge {
 using ClaytonBridge = CopulaBridge<Clayton>;
 using GaussianBridge = CopulaBridge<Guassian>;
 using GumbelBridge = CopulaBridge<Gumbel>;
+using IndependenceBridge = CopulaBridge<Independence>;
 using StudentTBridge = CopulaBridge<StudentT>;
 
 struct FinalProbabilitiesBridge {
@@ -149,11 +155,12 @@ class VineBridge {
   VineBridge(
     std::vector<std::vector<double>> marginals,
     usize max_nodes,
-    Method method
+    Method method,
+    SelectionCriterion selection_criterion
   )
     : m_marginal_storage(std::move(marginals)),
       m_marginal_views(marginal_views(m_marginal_storage)),
-      m_vine(m_marginal_views, max_nodes, method)
+      m_vine(m_marginal_views, max_nodes, method, selection_criterion)
   {}
 
   VineBridge(const VineBridge&) = delete;
@@ -167,6 +174,10 @@ class VineBridge {
 
   std::vector<Edges> trees() const {
     return m_vine.trees();
+  }
+
+  SelectionCriterion selection_criterion() const {
+    return m_vine.selection_criterion();
   }
 
   FinalProbabilitiesBridge final_probabilities() const {
@@ -202,6 +213,7 @@ void bind_copula_methods(py::class_<Bridge>& cls) {
   cls
     .def("fit", &Bridge::fit, py::call_guard<py::gil_scoped_release>())
     .def_property_readonly("params", &Bridge::params)
+    .def("parameter_count", &Bridge::parameter_count)
     .def(
       "estimate_copula_prob_densities",
       &Bridge::estimate_copula_prob_densities
@@ -237,6 +249,7 @@ PYBIND11_MODULE(_vines, module) {
   py::class_<OptimiserResults>(module, "OptimiserResults")
     .def_readonly("f_opt_ll", &OptimiserResults::f_opt_ll)
     .def_readonly("aic", &OptimiserResults::aic)
+    .def_readonly("bic", &OptimiserResults::bic)
     .def_readonly("number_it", &OptimiserResults::number_it)
     .def_readonly("number_fev", &OptimiserResults::number_fev)
     .def_readonly("result", &OptimiserResults::result);
@@ -342,6 +355,17 @@ PYBIND11_MODULE(_vines, module) {
     );
   bind_copula_methods(gumbel);
 
+  auto independence = py::class_<IndependenceBridge>(module, "Independence")
+    .def(
+      py::init<std::vector<double>, std::vector<double>>(),
+      py::arg("u1"),
+      py::arg("u2")
+    )
+    .def("cdf", [](const IndependenceBridge&, double u1, double u2) {
+      return Independence::cdf(u1, u2);
+    });
+  bind_copula_methods(independence);
+
   auto student_t = py::class_<StudentTBridge>(module, "StudentT")
     .def(
       py::init<std::vector<double>, std::vector<double>, double, double>(),
@@ -356,6 +380,15 @@ PYBIND11_MODULE(_vines, module) {
     .value("CMPI", Method::Cmpi)
     .value("CMPI_ZSCORE", Method::CmpiZscore)
     .value("STANDARD", Method::Standard)
+    .finalize();
+
+  py::native_enum<SelectionCriterion>(
+    module,
+    "SelectionCriterion",
+    "enum.Enum"
+  )
+    .value("AIC", SelectionCriterion::Aic)
+    .value("BIC", SelectionCriterion::Bic)
     .finalize();
 
   py::class_<FinalProbabilitiesBridge>(module, "FinalProbabilities")
@@ -380,6 +413,8 @@ PYBIND11_MODULE(_vines, module) {
     .def("conditioning_set", &Edge::conditioning_set)
     .def("union_set", &Edge::union_set)
     .def("k_tau", &Edge::k_tau)
+    .def("copula_name", &Edge::copula_name)
+    .def("parameter_count", &Edge::parameter_count)
     .def(
       "left_given_right",
       [](const Edge& edge) { return edge_values(edge.left_given_right()); }
@@ -399,15 +434,25 @@ PYBIND11_MODULE(_vines, module) {
 
   py::class_<VineBridge>(module, "Vine")
     .def(
-      py::init<std::vector<std::vector<double>>, usize, Method>(),
+      py::init<
+        std::vector<std::vector<double>>,
+        usize,
+        Method,
+        SelectionCriterion
+      >(),
       py::arg("marginals"),
       py::arg("max_nodes") = 6,
-      py::arg("method") = Method::Cmpi
+      py::arg("method") = Method::Cmpi,
+      py::arg("selection_criterion") = SelectionCriterion::Bic
     )
     .def("fit", &VineBridge::fit, py::call_guard<py::gil_scoped_release>())
     .def("trees", &VineBridge::trees)
     .def("final_probabilities", &VineBridge::final_probabilities)
     .def("final_results", &VineBridge::final_results)
+    .def_property_readonly(
+      "selection_criterion",
+      &VineBridge::selection_criterion
+    )
     .def("__str__", &VineBridge::to_string)
     .def("__repr__", [](const VineBridge& vine) {
       return "Vine(" + vine.to_string() + ")";

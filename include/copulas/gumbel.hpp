@@ -25,16 +25,20 @@ class Gumbel : public Copula<1> {
     return "Gumbel";
   }
 
+  double cdf(double u1_scalar, double u2_scalar) const {
+    return std::exp(-term_A(u1_scalar, u2_scalar));
+  }
+
   /// c(u_1, u_2; \delta) = (A + \delta - 1) A^{1 - 2\delta} \exp(-A) (u_1 u_2)^{-1} (-\ln u_1)^{\delta - 1} (-\ln u_2)^{\delta - 1}
   inline double estimate_copula_density(double u1_scalar, double u2_scalar) const 
   override {
     const double delta = this->m_params[0][0];
     const double A = term_A(u1_scalar, u2_scalar);
     return (
-      (A + delta - 1.0) * std::powf(A, (1.0 - 2.0 * delta)) *
-      std::exp(-A) * std::powf(u1_scalar * u2_scalar, -1.0) *
-      std::powf(-std::log(u1_scalar), delta - 1.0) * 
-      std::powf(-std::log(u2_scalar), delta - 1.0)
+      (A + delta - 1.0) * std::pow(A, (1.0 - 2.0 * delta)) *
+      std::exp(-A) * std::pow(u1_scalar * u2_scalar, -1.0) *
+      std::pow(-std::log(u1_scalar), delta - 1.0) *
+      std::pow(-std::log(u2_scalar), delta - 1.0)
     );
   }
 
@@ -42,8 +46,8 @@ class Gumbel : public Copula<1> {
   double h_conditional_prob(double u1_scalar, double u2_scalar) const override {
     const double delta = this->m_params[0][0];
     return 
-      std::powf(u1_scalar, -1.0) * 
-      std::powf(-std::log(u1_scalar), delta - 1.0) * 
+      std::pow(u1_scalar, -1.0) *
+      std::pow(-std::log(u1_scalar), delta - 1.0) *
       term_B(u1_scalar, u2_scalar) *
       std::exp(-term_A(u1_scalar, u2_scalar));
   }
@@ -71,10 +75,10 @@ class Gumbel : public Copula<1> {
   inline double term_A(double u1_scalar, double u2_scalar) const {
     const double delta = this->m_params[0][0];
     return
-      std::powf(
+      std::pow(
         (
-          std::powf(-std::log(u1_scalar), delta) + 
-          std::powf(-std::log(u2_scalar), delta)
+          std::pow(-std::log(u1_scalar), delta) +
+          std::pow(-std::log(u2_scalar), delta)
         ), 
       1.0 / delta
     );
@@ -84,10 +88,10 @@ class Gumbel : public Copula<1> {
   inline double term_B(double u1_scalar, double u2_scalar) const {
     const double delta = this->m_params[0][0];
     return
-      std::powf(
+      std::pow(
         (
-          std::powf(-std::log(u1_scalar), delta) + 
-          std::powf(-std::log(u2_scalar), delta)
+          std::pow(-std::log(u1_scalar), delta) +
+          std::pow(-std::log(u2_scalar), delta)
         ), 
       (1.0 - delta) / delta
     );

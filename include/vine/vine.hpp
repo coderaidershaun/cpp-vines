@@ -64,6 +64,7 @@ struct Vine {
   Marginals m_marginals;
   usize m_max_nodes;
   Method m_method;
+  SelectionCriterion m_selection_criterion;
 
   /// Higher-tree copulas retain spans into conditional values owned by earlier trees.
   std::vector<Edges> m_trees;
@@ -72,11 +73,13 @@ struct Vine {
   Vine(
     Marginals marginals,
     usize max_nodes = 6,
-    Method method = Method::Cmpi
+    Method method = Method::Cmpi,
+    SelectionCriterion selection_criterion = SelectionCriterion::Bic
   )
     : m_marginals(std::move(marginals)),
       m_max_nodes(std::min(m_marginals.size(), max_nodes)),
-      m_method(method)
+      m_method(method),
+      m_selection_criterion(selection_criterion)
   {}
 
   /// Builds lower trees first because each higher tree consumes their conditionals
@@ -112,6 +115,10 @@ struct Vine {
 
   const std::vector<Edges>& trees() const {
     return m_trees;
+  }
+
+  SelectionCriterion selection_criterion() const {
+    return m_selection_criterion;
   }
 
   /// Exposes final-edge views to avoid copying fitted conditional probabilities
@@ -161,48 +168,11 @@ struct Vine {
     };
 
     if (m_method != Method::Standard) {
-      const auto accumulate = [](std::vector<double>& values) {
-        double cumulative = 0.0;
-
-        for (double& value : values) {
-          cumulative += value - 0.5;
-          value = cumulative;
-        }
-      };
-
-      accumulate(results.left_given_right);
-      accumulate(results.right_given_left);
+      accumulate_cmpi(results.left_given_right);
+      accumulate_cmpi(results.right_given_left);
     }
 
     if (m_method == Method::CmpiZscore) {
-      const auto normalize = [](std::vector<double>& values)
-        -> std::expected<void, SmartError>
-      {
-        double sum = 0.0;
-        for (double value : values) sum += value;
-        const double mean = sum / static_cast<double>(values.size());
-
-        double squared_deviations = 0.0;
-        for (double value : values) {
-          const double deviation = value - mean;
-          squared_deviations += deviation * deviation;
-        }
-
-        const double standard_deviation = std::sqrt(
-          squared_deviations / static_cast<double>(values.size())
-        );
-
-        if (standard_deviation == 0.0) {
-          return std::unexpected(SmartError::DivisionByZero);
-        }
-
-        for (double& value : values) {
-          value = (value - mean) / standard_deviation;
-        }
-
-        return {};
-      };
-
       auto left_normalized = normalize(results.left_given_right);
       if (!left_normalized) {
         return std::unexpected(left_normalized.error());
@@ -218,6 +188,43 @@ struct Vine {
   }
 
   private:
+
+  static void accumulate_cmpi(std::vector<double>& values) {
+    double cumulative = 0.0;
+
+    for (double& value : values) {
+      cumulative += value - 0.5;
+      value = cumulative;
+    }
+  }
+
+  static std::expected<void, SmartError> normalize(
+    std::vector<double>& values
+  ) {
+    double sum = 0.0;
+    for (double value : values) sum += value;
+    const double mean = sum / static_cast<double>(values.size());
+
+    double squared_deviations = 0.0;
+    for (double value : values) {
+      const double deviation = value - mean;
+      squared_deviations += deviation * deviation;
+    }
+
+    const double standard_deviation = std::sqrt(
+      squared_deviations / static_cast<double>(values.size())
+    );
+
+    if (standard_deviation == 0.0) {
+      return std::unexpected(SmartError::DivisionByZero);
+    }
+
+    for (double& value : values) {
+      value = (value - mean) / standard_deviation;
+    }
+
+    return {};
+  }
 
   /// Considers every marginal pair so dependence can determine the first topology
   std::expected<Candidates, SmartError> build_initial_candidates() const {
@@ -391,11 +398,11 @@ struct Vine {
   }
 
   /// Uses Prim-style growth to favor strong dependence without forming cycles
-  static std::expected<Edges, SmartError> build_spanning_tree(
+  std::expected<Edges, SmartError> build_spanning_tree(
     Candidates candidates,
     usize target_edges,
     SmartError empty_candidates_error
-  ) {
+  ) const {
     if (candidates.empty()) {
       return std::unexpected(empty_candidates_error);
     }
@@ -432,15 +439,16 @@ struct Vine {
   }
 
   /// Fits only selected links because fitting every candidate copula is costly
-  static std::expected<void, SmartError> fit_candidate(
+  std::expected<void, SmartError> fit_candidate(
     Candidate& candidate,
     std::set<usize>& connected_nodes,
     Edges& tree
-  ) {
+  ) const {
     auto fit = candidate.edge.fit(
       candidate.u_left,
       candidate.u_right,
-      candidate.tau
+      candidate.tau,
+      m_selection_criterion
     );
 
     if (!fit) return std::unexpected(fit.error());
@@ -464,9 +472,13 @@ struct Vine {
 
   /// Uses magnitude because either dependence direction is equally informative
   static void sort_candidates_by_tau(Candidates& candidates) {
-    std::sort(candidates.begin(), candidates.end(), [](const Candidate& x, const Candidate& y) {
-      return std::abs(x.tau) > std::abs(y.tau);
-    });
+    std::sort(
+      candidates.begin(),
+      candidates.end(),
+      [](const Candidate& x, const Candidate& y) {
+        return std::abs(x.tau) > std::abs(y.tau);
+      }
+    );
   }
 
   static void sort_edges_by_tau(Edges& edges) {
@@ -500,6 +512,16 @@ inline std::ostream& operator<<(std::ostream& output, const Vine& vine) {
     }
   };
 
+  const auto write_edges = [&output](
+    const Edges& edges,
+    const auto& write_edge
+  ) {
+    for (usize edge_index = 0; edge_index < edges.size(); edge_index++) {
+      if (edge_index > 0) output << ", ";
+      write_edge(edges[edge_index]);
+    }
+  };
+
   const auto& trees = vine.trees();
 
   for (usize tree_index = 0; tree_index < trees.size(); tree_index++) {
@@ -509,10 +531,7 @@ inline std::ostream& operator<<(std::ostream& output, const Vine& vine) {
 
     const auto& tree = trees[tree_index];
 
-    for (usize edge_index = 0; edge_index < tree.size(); edge_index++) {
-      if (edge_index > 0) output << ", ";
-
-      const Edge& edge = tree[edge_index];
+    write_edges(tree, [&](const Edge& edge) {
       write_nodes(edge.conditioned_left());
       write_nodes(edge.conditioned_right());
 
@@ -520,7 +539,41 @@ inline std::ostream& operator<<(std::ostream& output, const Vine& vine) {
         output << '|';
         write_nodes(edge.conditioning_set());
       }
-    }
+    });
+
+    output << "\n  copulas: ";
+    write_edges(tree, [&](const Edge& edge) {
+      output << edge.copula_name().value_or("Unavailable");
+    });
+
+    output << "\n  params: [";
+    write_edges(tree, [&](const Edge& edge) {
+      output << '[';
+      const auto parameters = edge.parameters();
+      if (parameters) {
+        for (
+          usize parameter_index = 0;
+          parameter_index < parameters->size();
+          parameter_index++
+        ) {
+          if (parameter_index > 0) output << ", ";
+          output << (*parameters)[parameter_index];
+        }
+      }
+      output << ']';
+    });
+    output << ']';
+
+    output << "\n  tau: [";
+    write_edges(tree, [&](const Edge& edge) {
+      const auto tau = edge.k_tau();
+      if (tau) {
+        output << *tau;
+      } else {
+        output << "Unavailable";
+      }
+    });
+    output << ']';
   }
 
   return output;

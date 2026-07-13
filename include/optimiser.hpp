@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <functional>
+#include <limits>
 #include <utility>
 
 #include <types.hpp>
@@ -27,10 +28,11 @@ enum class Result {
 };
 
 struct OptimiserResults {
-  double f_opt_ll;                        // Objective function log likelihood value at the optimum
-  double aic;                             // AIC value
-  double number_it;                       // Number of iterations performed
-  double number_fev;                      // Number of function evaluations
+  double f_opt_ll = std::numeric_limits<double>::quiet_NaN(); // Log likelihood at the optimum
+  double aic = std::numeric_limits<double>::quiet_NaN();      // AIC value
+  double bic = std::numeric_limits<double>::quiet_NaN();      // BIC value
+  double number_it = 0.0;                 // Number of iterations performed
+  double number_fev = 0.0;                // Number of function evaluations
   Result result = Result::Pending;        // Result status
 };
 

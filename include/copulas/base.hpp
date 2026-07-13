@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <span>
 #include <string>
 #include <utility>
@@ -54,6 +55,10 @@ class Copula {
     return m_params;
   }
 
+  static constexpr usize parameter_count() {
+    return ParamsN;
+  }
+
   /// Runs optimisation algorithm to finds optimum parameter(s) for copula
   OptimiserResults fit() {
     const ParamBounds<ParamsN> initial_params = m_params;
@@ -73,6 +78,10 @@ class Copula {
     );
 
     OptimiserResults results = optimiser.fit();
+    results.bic =
+      -2.0 * results.f_opt_ll +
+      std::log(static_cast<double>(m_u1.size())) *
+      static_cast<double>(parameter_count());
 
     if (results.result != Result::Success) {
       m_params = initial_params;
@@ -93,14 +102,26 @@ class Copula {
     std::vector<double> copula_prob_densities;
     const usize n = this->m_u1.size();
     copula_prob_densities.reserve(n);
+    bool has_invalid_density = false;
 
     for (usize i=0; i<n; i++) {
       const double copula_density = estimate_copula_density(this->m_u1[i], this->m_u2[i]);
-      ln_likelihood += std::log(copula_density);
       copula_prob_densities.emplace_back(copula_density);
+
+      if (!std::isfinite(copula_density) || copula_density <= 0.0) {
+        has_invalid_density = true;
+        continue;
+      }
+
+      if (!has_invalid_density) {
+        ln_likelihood += std::log(copula_density);
+      }
     }
 
-    return {std::move(copula_prob_densities), ln_likelihood};
+    return {
+      std::move(copula_prob_densities),
+      has_invalid_density ? -std::numeric_limits<double>::infinity() : ln_likelihood
+    };
   }
 
   CondProbsH h_conditional_prob_set(double u1_scalar, double u2_scalar) const {

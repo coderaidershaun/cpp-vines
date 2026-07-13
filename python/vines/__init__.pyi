@@ -9,9 +9,11 @@ from ._vines import FixedSeries as FixedSeries
 from ._vines import Gaussian as Gaussian
 from ._vines import Guassian as Guassian
 from ._vines import Gumbel as Gumbel
+from ._vines import Independence as Independence
 from ._vines import Method as Method
 from ._vines import OptimiserResults as OptimiserResults
 from ._vines import Result as Result
+from ._vines import SelectionCriterion as SelectionCriterion
 from ._vines import StudentT as StudentT
 from ._vines import Vine as Vine
 from ._vines import VinesError as VinesError
@@ -29,9 +31,11 @@ __all__ = [
     "Gaussian",
     "Guassian",
     "Gumbel",
+    "Independence",
     "Method",
     "OptimiserResults",
     "Result",
+    "SelectionCriterion",
     "StudentT",
     "Vine",
     "VinesError",

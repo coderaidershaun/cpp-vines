@@ -1,5 +1,11 @@
 # cpp-vines
 
+![alt text](image.png)
+
+You can see from running `./build/example-vine ` above the results for fitting an R-Vine copula to
+6 assets ecdf based log returns. This information can be used for computing CMPI (Cumulative Mispricing Index)
+and determining a potential statistical arbitrage opportunity.
+
 `cpp-vines` is a C++23 proof of concept for fitting regular-vine (R-vine)
 copula models to aligned numerical series. It is aimed at experimenting with
 dependence structures in asset returns, but the core accepts any aligned
@@ -18,9 +24,11 @@ floating-point marginals.
 - **Rolling empirical CDF.** `Ecdf` maintains a capacity-bounded empirical CDF
   for transforming a numerical series into marginal values.
 
-- **Four fitted pair-copula families.** Each selected edge evaluates Clayton,
-  Gaussian, Gumbel, and Student-t copulas. The fits run concurrently and the
-  successful family with the lowest AIC is retained.
+- **Seven fitted pair-copula candidates.** Each selected edge evaluates
+  Independence, Gaussian, and Student-t; positive-dependence edges also evaluate
+  Clayton, survival Clayton, Gumbel, and survival Gumbel. Parametric fits run
+  concurrently and the successful family with the lowest BIC is retained by
+  default (AIC remains selectable).
 
 - **Automatic R-vine construction.** The fitter ranks dependence with
   Kendall's tau, builds maximum-dependence spanning trees, enforces the
@@ -68,9 +76,10 @@ hot data and vine-construction paths:
   build each spanning tree first; copula optimisation is then performed only
   for the selected tree edges rather than every possible candidate pair.
 
-- **Parallel family selection.** The four copula-family optimisations for a
-  selected edge run via `std::async`, reducing wall-clock fitting time on
-  systems with available CPU parallelism.
+- **Parallel family selection.** The parameterized copula-family
+  optimisations for a selected edge run via `std::async`, reducing wall-clock
+  fitting time on systems with available CPU parallelism. Independence is
+  evaluated immediately because it has no parameters to optimize.
 
 The ECDF keeps a sorted `std::vector`, so insertion is still linear in the
 configured ECDF window. Likewise, vine fitting and numerical optimisation are

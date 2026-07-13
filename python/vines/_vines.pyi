@@ -21,6 +21,9 @@ class OptimiserResults:
     def aic(self) -> float: ...
 
     @property
+    def bic(self) -> float: ...
+
+    @property
     def number_it(self) -> float: ...
 
     @property
@@ -99,6 +102,8 @@ class _Copula:
 
     def fit(self) -> OptimiserResults: ...
 
+    def parameter_count(self) -> int: ...
+
     def estimate_copula_prob_densities(self) -> CopulaDensityEstimate: ...
 
     def h_conditional_prob_set(self, u1: float, u2: float) -> CondProbsH: ...
@@ -148,6 +153,16 @@ class Gumbel(_Copula):
     def delta_from_kendalls_tau(tau: float) -> float: ...
 
 
+class Independence(_Copula):
+    def __init__(
+        self,
+        u1: Sequence[float],
+        u2: Sequence[float],
+    ) -> None: ...
+
+    def cdf(self, u1: float, u2: float) -> float: ...
+
+
 class StudentT(_Copula):
     def __init__(
         self,
@@ -162,6 +177,11 @@ class Method(Enum):
     CMPI = 0
     CMPI_ZSCORE = 1
     STANDARD = 2
+
+
+class SelectionCriterion(Enum):
+    AIC = 0
+    BIC = 1
 
 
 class FinalProbabilities:
@@ -196,6 +216,10 @@ class Edge:
 
     def k_tau(self) -> float | None: ...
 
+    def copula_name(self) -> str | None: ...
+
+    def parameter_count(self) -> int | None: ...
+
     def left_given_right(self) -> list[float]: ...
 
     def right_given_left(self) -> list[float]: ...
@@ -209,6 +233,7 @@ class Vine:
         marginals: Sequence[Sequence[float]],
         max_nodes: int = 6,
         method: Method = Method.CMPI,
+        selection_criterion: SelectionCriterion = SelectionCriterion.BIC,
     ) -> None: ...
 
     def fit(self) -> None: ...
@@ -218,6 +243,9 @@ class Vine:
     def final_probabilities(self) -> FinalProbabilities: ...
 
     def final_results(self) -> FinalResults: ...
+
+    @property
+    def selection_criterion(self) -> SelectionCriterion: ...
 
     def __str__(self) -> str: ...
 

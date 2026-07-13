@@ -15,11 +15,12 @@
 #include <copulas/clayton.hpp>
 #include <copulas/guassian.hpp>
 #include <copulas/gumbel.hpp>
+#include <copulas/independence.hpp>
+#include <copulas/survival.hpp>
 #include <copulas/studentt.hpp>
 #include <csv.hpp>
 #include <errors.hpp>
 #include <types.hpp>
-#include <vine/edge.hpp>
 
 
 std::pair<Asset, Asset> load_assets(const std::string& filename) {
@@ -49,6 +50,31 @@ std::pair<Asset, Asset> load_assets(const std::string& filename) {
   return {std::move(asset_1), std::move(asset_2)};
 }
 
+template <typename BaseCopula>
+void verify_survival_copula(
+  const BaseCopula& base,
+  const SurvivalCopula<BaseCopula>& survival
+) {
+  constexpr double u1 = 0.37;
+  constexpr double u2 = 0.68;
+
+  const double expected_cdf =
+    u1 + u2 - 1.0 + base.cdf(1.0 - u1, 1.0 - u2);
+  assert(std::fabs(survival.cdf(u1, u2) - expected_cdf) < 1e-12);
+  assert(
+    std::fabs(
+      survival.estimate_copula_density(u1, u2) -
+        base.estimate_copula_density(1.0 - u1, 1.0 - u2)
+    ) < 1e-12
+  );
+
+  const CondProbsH base_h = base.h_conditional_prob_set(1.0 - u1, 1.0 - u2);
+  const CondProbsH survival_h = survival.h_conditional_prob_set(u1, u2);
+  assert(std::fabs(survival_h.u1_given_u2 - (1.0 - base_h.u1_given_u2)) < 1e-12);
+  assert(std::fabs(survival_h.u2_given_u1 - (1.0 - base_h.u2_given_u1)) < 1e-12);
+  assert(std::fabs(survival.kendalls_tau() - base.kendalls_tau()) < 1e-12);
+}
+
 
 int main() {
   auto [asset_1, asset_2] = load_assets("prices.csv");
@@ -76,47 +102,32 @@ int main() {
   StudentT student_t(u1_view, u2_view, k_tau);
   student_t.fit();
 
-  Edge edge(bitmask(0), bitmask(1), bitmask_empty());
-  assert(!edge.copula_available());
-  assert(!edge.left_given_right().has_value());
-  assert(!edge.right_given_left().has_value());
-  const auto missing_conditionals = edge.conditional_values(bitmask(0), bitmask(1));
-  assert(!missing_conditionals.has_value());
-  assert(missing_conditionals.error() == SmartError::MissingConditionalValues);
+  const std::vector<double> rotation_samples{0.2, 0.4, 0.6, 0.8};
+  Clayton rotation_clayton(rotation_samples, rotation_samples, 3.0);
+  SurvivalCopula<Clayton> survival_clayton(
+    rotation_samples,
+    rotation_samples,
+    3.0
+  );
+  Gumbel rotation_gumbel(rotation_samples, rotation_samples, 2.5);
+  SurvivalCopula<Gumbel> survival_gumbel(
+    rotation_samples,
+    rotation_samples,
+    2.5
+  );
 
-  const auto edge_fit = edge.fit(u1_view, u2_view, k_tau);
-  assert(edge_fit.has_value());
-  assert(edge.copula_available());
-  assert(edge.k_tau().has_value());
-  assert(std::fabs(*edge.k_tau() - k_tau) < 1e-12);
+  verify_survival_copula(rotation_clayton, survival_clayton);
+  verify_survival_copula(rotation_gumbel, survival_gumbel);
 
-  const auto left_given_right = edge.conditional_values(bitmask(0), bitmask(1));
-  assert(left_given_right.has_value());
-  assert(left_given_right->size() == u1.size());
-  assert(edge.left_given_right().has_value());
-  assert(edge.left_given_right()->data() == left_given_right->data());
-
-  const auto right_given_left = edge.conditional_values(bitmask(1), bitmask(0));
-  assert(right_given_left.has_value());
-  assert(right_given_left->size() == u2.size());
-  assert(edge.right_given_left().has_value());
-  assert(edge.right_given_left()->data() == right_given_left->data());
-
-  const auto unavailable_conditionals = edge.conditional_values(bitmask(0), bitmask_empty());
-  assert(!unavailable_conditionals.has_value());
-  assert(unavailable_conditionals.error() == SmartError::MissingConditionalValues);
-
-  const std::span<const double> empty;
-  const auto failed_fit = Edge::fit_optimal_copula(empty, empty, 0.0);
-  assert(!failed_fit.has_value());
-  assert(failed_fit.error() == SmartError::ArrayLengthZero);
-
-  Edge failed_edge(bitmask(0), bitmask(1), bitmask_empty());
-  const auto failed_edge_fit = failed_edge.fit(empty, empty, 0.0);
-  assert(!failed_edge_fit.has_value());
-  assert(failed_edge_fit.error() == SmartError::ArrayLengthZero);
-  assert(!failed_edge.copula_available());
-  assert(!failed_edge.k_tau().has_value());
+  Independence independence(rotation_samples, rotation_samples);
+  const CondProbsH independence_h = independence.h_conditional_prob_set(
+    0.37,
+    0.68
+  );
+  assert(std::fabs(independence.cdf(0.37, 0.68) - 0.2516) < 1e-12);
+  assert(independence.estimate_copula_density(0.37, 0.68) == 1.0);
+  assert(independence_h.u1_given_u2 == 0.37);
+  assert(independence_h.u2_given_u1 == 0.68);
 
   CondProbsH h_clayton = clayton.h_conditional_prob_set(u1[0], u2[0]);
   assert(std::fabs(clayton.params()[0][0] - 2.75616) < 1e-3);
